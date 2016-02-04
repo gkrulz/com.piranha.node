@@ -1,7 +1,5 @@
 package com.piranha.node;
 
-
-import com.piranha.node.comm.NodeCommLine;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -35,7 +33,7 @@ public class Bootstrap {
 //            NodeCommLine nodeCommLine = new NodeCommLine();
 //            nodeCommLine.setSocket(socket);
 //
-//            log.debug("TCP comm line created");
+//            log.debug("TCP comm line created"); 
         } catch (IOException e) {
             e.printStackTrace();
         }
