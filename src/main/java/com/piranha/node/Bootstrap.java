@@ -33,7 +33,7 @@ public class Bootstrap {
 //            NodeCommLine nodeCommLine = new NodeCommLine();
 //            nodeCommLine.setSocket(socket);
 //
-//            log.debug("TCP comm line created"); 
+//            log.debug("TCP comm line created");
         } catch (IOException e) {
             e.printStackTrace();
         }
