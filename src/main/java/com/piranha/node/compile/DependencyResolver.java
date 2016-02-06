@@ -52,11 +52,13 @@ public class DependencyResolver{
                 comm.writeToSocket(socket, dependencyRequest);
                 socket.close();
 
-                ServerSocket serverSocket = new ServerSocket(9007);
-                socket = serverSocket.accept();
+//                ServerSocket serverSocket = new ServerSocket(9007);
+//                socket = serverSocket.accept();
 
                 this.readAndSave(socket, dependency);
                 socket.close();
+
+                log.debug("Dependency Sent");
             }
         } catch (IOException e) {
             log.error("Error", e);
