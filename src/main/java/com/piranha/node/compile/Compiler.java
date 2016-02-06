@@ -36,7 +36,12 @@ public class Compiler extends Thread {
         JsonArray dependencies = classJson.get("dependencies").getAsJsonArray();
 
         if (dependencies.size() > 0) {
-            DependencyResolver dependencyResolver = new DependencyResolver();
+            DependencyResolver dependencyResolver = null;
+            try {
+                dependencyResolver = new DependencyResolver();
+            } catch (IOException e) {
+                log.error("Error", e);
+            }
             for (int i = 0; i < dependencies.size(); i++) {
                 String dependency = dependencies.get(i).getAsString();
                 String ipAddress = dependencyMap.get(dependency);
