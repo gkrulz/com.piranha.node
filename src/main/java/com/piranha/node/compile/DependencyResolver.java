@@ -40,7 +40,7 @@ public class DependencyResolver{
         try {
             log.debug(dependency);
             if (!ipAddress.equals(localIpAddress.getHostAddress())) {
-                Socket socket = new Socket(ipAddress, 9007);
+                Socket socket = new Socket(ipAddress, 10500);
 
                 JsonObject dependencyRequest = new JsonObject();
                 dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
