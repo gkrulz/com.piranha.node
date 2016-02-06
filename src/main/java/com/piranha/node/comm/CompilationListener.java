@@ -55,7 +55,6 @@ public class CompilationListener extends Thread{
             portInfoString.append((char) data);
             data = in.read();
         }
-        log.debug(portInfoString);
 
         return jsonParser.parse(portInfoString.toString()).getAsJsonArray();
     }
