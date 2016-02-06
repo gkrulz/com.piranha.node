@@ -3,6 +3,7 @@ package com.piranha.node.compile;
 import com.google.gson.JsonObject;
 import com.piranha.node.util.Communication;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -20,19 +21,15 @@ import java.util.Properties;
 public class DependencyResolver{
     private static final Logger log = Logger.getLogger(DependencyResolver.class);
     private Communication comm;
-    private String ipAddress;
-    private String dependency;
     private Properties properties;
 
-    public DependencyResolver(String ipAddress, String dependency) throws IOException {
-        this.ipAddress = ipAddress;
-        this.dependency = dependency;
+    public DependencyResolver() throws IOException {
         this.comm = new Communication();
         this.properties = new Properties();
         this.properties.load(DependencyResolver.class.getClassLoader().getResourceAsStream("config.properties"));
     }
 
-    public void resolve() {
+    public void resolve(String ipAddress, String dependency) {
         InetAddress localIpAddress= null;
         try {
             localIpAddress = InetAddress.getLocalHost();
@@ -41,9 +38,9 @@ public class DependencyResolver{
         }
 
         try {
-
-            if (!this.ipAddress.equals(localIpAddress.getHostAddress())) {
-                Socket socket = new Socket(this.ipAddress, 9007);
+            log.debug(dependency);
+            if (!ipAddress.equals(localIpAddress.getHostAddress())) {
+                Socket socket = new Socket(ipAddress, 9007);
 
                 JsonObject dependencyRequest = new JsonObject();
                 dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
