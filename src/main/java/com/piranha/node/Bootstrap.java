@@ -1,5 +1,6 @@
 package com.piranha.node;
 
+import com.piranha.node.comm.CompilationListener;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -25,6 +26,9 @@ public class Bootstrap {
                 data = in.read();
             }
             log.debug(portInfoString);
+
+            CompilationListener compilationListener = new CompilationListener();
+            compilationListener.start();
 //            int portNo = Integer.parseInt(in.re);
 //            log.debug(portNo);
 //
