@@ -56,7 +56,7 @@ public class CompilationListener extends Thread{
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
                     if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
                         Type type = new TypeToken<Map<String, String>>(){}.getType();
-                        HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("op"), type);
+                        HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message"), type);
                         dependencyMap.putAll(tempDependencyMap);
 
                     }
