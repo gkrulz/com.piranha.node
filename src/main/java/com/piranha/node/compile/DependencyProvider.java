@@ -3,12 +3,14 @@ package com.piranha.node.compile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.piranha.node.util.Communication;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -17,10 +19,13 @@ public class DependencyProvider extends Thread{
     private static final Logger log = Logger.getLogger(DependencyProvider.class);
     private Communication comm;
     private HashMap<String, String> dependencyMap;
+    private Properties properties;
 
-    public DependencyProvider(HashMap<String, String> dependencyMap) {
+    public DependencyProvider(HashMap<String, String> dependencyMap) throws IOException {
         this.comm = new Communication();
         this.dependencyMap = dependencyMap;
+        this.properties = new Properties();
+        this.properties.load(DependencyProvider.class.getClassLoader().getResourceAsStream("config.properties"));
     }
 
     @Override
@@ -35,8 +40,15 @@ public class DependencyProvider extends Thread{
                 String requestString = comm.readFromSocket(socket);
                 JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
-                if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST")) {
-                    this.sendDependency(new File(""), socket);
+                String path = properties.getProperty("DESTINATION_PATH");
+                String packagePath = requestJson.get("dependency").getAsString();
+                packagePath = packagePath.replace(".", "/") + ".class";
+
+                File file = new File(path + packagePath);
+
+                if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
+
+                    this.sendDependency(file, socket);
                 }
             } catch (IOException e) {
                 log.error("Error", e);
@@ -46,14 +58,7 @@ public class DependencyProvider extends Thread{
 
     public void sendDependency(File classFile, Socket socket) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(classFile);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-        byte[] bytes = new byte[(int)classFile.length()];
 
-        bufferedInputStream.read(bytes, 0, bytes.length);
-        OutputStream outputStream = socket.getOutputStream();
-        outputStream.write(bytes, 0, bytes.length);
-
-        outputStream.flush();
-        outputStream.close();
+        IOUtils.copy(fileInputStream, socket.getOutputStream());
     }
 }

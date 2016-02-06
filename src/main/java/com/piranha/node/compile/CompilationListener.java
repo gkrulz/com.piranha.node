@@ -51,6 +51,10 @@ public class CompilationListener extends Thread{
 
                 if (incomingMessage.charAt(0) == '[') {
                     JsonArray incomingMsgJson = parser.parse(incomingMessage).getAsJsonArray();
+                    for (JsonElement classJson : incomingMsgJson) {
+                        Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap);
+                        compiler.start();
+                    }
 
                 } else if (incomingMessage.charAt(0) == '{') {
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
@@ -58,7 +62,6 @@ public class CompilationListener extends Thread{
                         Type type = new TypeToken<HashMap<String, String>>(){}.getType();
                         HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
                         dependencyMap.putAll(tempDependencyMap);
-
                     }
                 }
 
