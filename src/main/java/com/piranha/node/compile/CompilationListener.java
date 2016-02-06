@@ -29,6 +29,12 @@ public class CompilationListener extends Thread{
     public void run() {
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
+        DependencyProvider dependencyProvider = null;
+        try {
+            dependencyProvider = new DependencyProvider();
+        } catch (IOException e) {
+            log.error("Error", e);
+        }
 
         ServerSocket serverSocket = null;
         try {
@@ -62,6 +68,7 @@ public class CompilationListener extends Thread{
                         Type type = new TypeToken<HashMap<String, String>>(){}.getType();
                         HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
                         dependencyMap.putAll(tempDependencyMap);
+                        dependencyProvider.setDependencyMap(this.dependencyMap);
                     }
                 }
 

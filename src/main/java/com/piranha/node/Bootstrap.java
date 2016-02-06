@@ -1,6 +1,7 @@
 package com.piranha.node;
 
 import com.piranha.node.compile.CompilationListener;
+import com.piranha.node.compile.DependencyProvider;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -28,7 +29,6 @@ public class Bootstrap {
 
             CompilationListener compilationListener = new CompilationListener();
             compilationListener.start();
-
 
         } catch (IOException e) {
             e.printStackTrace();

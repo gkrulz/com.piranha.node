@@ -21,9 +21,8 @@ public class DependencyProvider extends Thread{
     private HashMap<String, String> dependencyMap;
     private Properties properties;
 
-    public DependencyProvider(HashMap<String, String> dependencyMap) throws IOException {
+    public DependencyProvider() throws IOException {
         this.comm = new Communication();
-        this.dependencyMap = dependencyMap;
         this.properties = new Properties();
         this.properties.load(DependencyProvider.class.getClassLoader().getResourceAsStream("config.properties"));
     }
@@ -34,7 +33,7 @@ public class DependencyProvider extends Thread{
 
         while (true) {
             try {
-                ServerSocket serverSocket = new ServerSocket(9007);
+                ServerSocket serverSocket = new ServerSocket(10500);
                 Socket socket = serverSocket.accept();
 
                 String requestString = comm.readFromSocket(socket);
@@ -60,5 +59,9 @@ public class DependencyProvider extends Thread{
         FileInputStream fileInputStream = new FileInputStream(classFile);
 
         IOUtils.copy(fileInputStream, socket.getOutputStream());
+    }
+
+    public void setDependencyMap(HashMap<String, String> dependencyMap) {
+        this.dependencyMap = dependencyMap;
     }
 }
