@@ -1,17 +1,15 @@
-package com.piranha.node.comm;
+package com.piranha.node.compile;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -20,8 +18,10 @@ public class CompilationListener extends Thread{
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private Socket socket;
     private HashMap<String, String> dependencyMap;
+    private Communication comm;
 
     public CompilationListener() {
+        comm = new Communication();
         dependencyMap = new HashMap<>();
     }
 
@@ -46,7 +46,7 @@ public class CompilationListener extends Thread{
             }
 
             try {
-                String incomingMessage = this.readFromSocket(socket);
+                String incomingMessage = this.comm.readFromSocket(socket);
 
 
                 if (incomingMessage.charAt(0) == '[') {
@@ -56,32 +56,18 @@ public class CompilationListener extends Thread{
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
                     if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
                         Type type = new TypeToken<HashMap<String, String>>(){}.getType();
-                        log.debug(incomingMsgJson.get("message").getAsString());
                         HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
                         dependencyMap.putAll(tempDependencyMap);
 
                     }
                 }
 
-                log.debug(dependencyMap);
+                log.debug(gson.toJson(dependencyMap));
 
             } catch (IOException e) {
                 log.error("Error", e);
             }
 
         }
-    }
-
-    private String readFromSocket(Socket socket) throws IOException {
-        InputStreamReader in = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
-        StringBuilder portInfoString  = new StringBuilder();
-        int data = in.read();
-
-        while(data != -1) {
-            portInfoString.append((char) data);
-            data = in.read();
-        }
-
-        return portInfoString.toString();
     }
 }

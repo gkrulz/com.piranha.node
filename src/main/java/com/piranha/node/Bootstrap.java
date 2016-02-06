@@ -1,6 +1,6 @@
 package com.piranha.node;
 
-import com.piranha.node.comm.CompilationListener;
+import com.piranha.node.compile.CompilationListener;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -16,7 +16,6 @@ public class Bootstrap {
     public static void main(String[] args) {
         try {
             Socket socket = new Socket("127.0.0.1", 9005);
-//            DataInputStream inputStream = new DataInputStream(socket.getInputStream());
             InputStreamReader in = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
 
             StringBuilder portInfoString  = new StringBuilder();
@@ -29,15 +28,8 @@ public class Bootstrap {
 
             CompilationListener compilationListener = new CompilationListener();
             compilationListener.start();
-//            int portNo = Integer.parseInt(in.re);
-//            log.debug(portNo);
-//
-//            socket = new Socket("127.0.0.1", portNo);
-//
-//            NodeCommLine nodeCommLine = new NodeCommLine();
-//            nodeCommLine.setSocket(socket);
-//
-//            log.debug("TCP comm line created");
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
