@@ -1,5 +1,7 @@
 package com.piranha.node.comm;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
@@ -43,7 +45,7 @@ public class CompilationListener extends Thread{
         }
     }
 
-    private JsonObject readFromSocket(Socket socket) throws IOException {
+    private JsonArray readFromSocket(Socket socket) throws IOException {
         InputStreamReader in = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
         StringBuilder portInfoString  = new StringBuilder();
         int data = in.read();
@@ -55,6 +57,6 @@ public class CompilationListener extends Thread{
         }
         log.debug(portInfoString);
 
-        return jsonParser.parse(portInfoString.toString()).getAsJsonObject();
+        return jsonParser.parse(portInfoString.toString()).getAsJsonArray();
     }
 }
