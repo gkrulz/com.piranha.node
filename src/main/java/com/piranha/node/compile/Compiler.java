@@ -73,11 +73,11 @@ public class Compiler extends Thread {
                 dependencyResolver.resolve(ipAddress, dependency);
             }
 
-            try {
-                dependencyResponceListener.join();
-            } catch (InterruptedException e) {
-                log.error("Error", e);
-            }
+//            try {
+//                dependencyResponceListener.join();
+//            } catch (InterruptedException e) {
+//                log.error("Error", e);
+//            }
         }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
