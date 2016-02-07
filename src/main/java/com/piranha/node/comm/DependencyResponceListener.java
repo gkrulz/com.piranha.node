@@ -59,7 +59,7 @@ public class DependencyResponceListener extends Thread{
                 testString = testString.replace(".class", "");
                 log.debug(testString);
 
-                if (dependencies.contains(testString)) {
+//                if (dependencies.contains(testString)) {
                     String fileName = responseJson.get("className").getAsString();
                     fileName = fileName.replace("/", Constants.PATH_SEPARATOR);
                     fileName = fileName.replace("\\", Constants.PATH_SEPARATOR);
@@ -75,7 +75,7 @@ public class DependencyResponceListener extends Thread{
                     IOUtils.copy(bis, fileOutputStream);
                     fileOutputStream.close();
                     i++;
-                }
+//                }
 
             } catch (IOException e) {
                 log.error("Error", e);
