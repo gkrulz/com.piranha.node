@@ -15,45 +15,42 @@ import java.util.Properties;
 /**
  * Created by Padmaka on 2/6/16.
  */
-public class DependencyProvider extends Thread{
+public class DependencyProvider extends Thread {
     private static final Logger log = Logger.getLogger(DependencyProvider.class);
     private Communication comm;
     private HashMap<String, String> dependencyMap;
     private Properties properties;
+    private Socket socket;
 
-    public DependencyProvider() throws IOException {
+    public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
         this.properties = new Properties();
         this.properties.load(DependencyProvider.class.getClassLoader().getResourceAsStream("config.properties"));
+        this.socket = socket;
     }
 
     @Override
     public void run() {
         JsonParser parser = new JsonParser();
 
-        while (true) {
-            try {
-                ServerSocket serverSocket = new ServerSocket(10500);
-                Socket socket = serverSocket.accept();
+        try {
+            String requestString = comm.readFromSocket(socket);
+            JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
-                String requestString = comm.readFromSocket(socket);
-                JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
+            String path = properties.getProperty("DESTINATION_PATH") + "/";
+            String packagePath = requestJson.get("dependency").getAsString();
+            packagePath = packagePath.replace(".", "/") + ".class";
 
-                String path = properties.getProperty("DESTINATION_PATH") + "/";
-                String packagePath = requestJson.get("dependency").getAsString();
-                packagePath = packagePath.replace(".", "/") + ".class";
+            File file = new File(path + packagePath);
 
-                File file = new File(path + packagePath);
+            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
 
-                if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
-
-                    this.sendDependency(file, socket);
-                }
-                socket.close();
-                log.debug("successfully sent dependency class file");
-            } catch (IOException e) {
-                log.error("Error", e);
+                this.sendDependency(file, socket);
             }
+            socket.close();
+            log.debug("successfully sent dependency class file");
+        } catch (IOException e) {
+            log.error("Error", e);
         }
     }
 
