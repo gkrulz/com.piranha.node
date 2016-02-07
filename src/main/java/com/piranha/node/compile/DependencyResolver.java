@@ -1,6 +1,7 @@
 package com.piranha.node.compile;
 
 import com.google.gson.JsonObject;
+import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -19,12 +20,9 @@ import java.util.Properties;
 public class DependencyResolver{
     private static final Logger log = Logger.getLogger(DependencyResolver.class);
     private Communication comm;
-    private Properties properties;
 
     public DependencyResolver() throws IOException {
         this.comm = new Communication();
-        this.properties = new Properties();
-        this.properties.load(DependencyResolver.class.getClassLoader().getResourceAsStream("config.properties"));
     }
 
     public void resolve(String ipAddress, String dependency) {
@@ -51,7 +49,7 @@ public class DependencyResolver{
                 this.readAndSave(socket, dependency);
                 socket.close();
 
-                log.debug("Dependency Sent");
+                log.debug("Dependency received");
             }
         } catch (IOException e) {
             log.error("Error", e);
@@ -59,7 +57,7 @@ public class DependencyResolver{
     }
 
     public void readAndSave(Socket socket, String className) throws IOException {
-        String path = properties.getProperty("DESTINATION_PATH") + "/";
+        String path = Constants.DESTINATION_PATH + "/";
         className = className.replace(".", "/") + ".class";
         File file = new File(path + className);
         file.getParentFile().mkdirs();

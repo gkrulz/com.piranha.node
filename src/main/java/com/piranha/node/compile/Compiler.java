@@ -3,6 +3,7 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.piranha.node.constants.Constants;
 import org.apache.log4j.Logger;
 
 import javax.tools.JavaCompiler;
@@ -83,7 +84,7 @@ public class Compiler extends Thread {
 
         List<String> options = new ArrayList<>();
         options.add("-d");
-        options.add(properties.getProperty("DESTINATION_PATH"));
+        options.add(Constants.DESTINATION_PATH);
         options.add("-classpath");
         URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
         StringBuilder sb = new StringBuilder();

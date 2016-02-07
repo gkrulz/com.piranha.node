@@ -2,6 +2,7 @@ package com.piranha.node.compile;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.piranha.node.comm.DependencyRequestListener;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
@@ -30,15 +31,11 @@ public class CompilationListener extends Thread{
     public void run() {
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
-        DependencyProvider dependencyProvider = null;
+        DependencyRequestListener dependencyRequestListener = null;
         ArrayList<Thread> compilers = new ArrayList<>();
 
-        try {
-            dependencyProvider = new DependencyProvider();
-            dependencyProvider.start();
-        } catch (IOException e) {
-            log.error("Error", e);
-        }
+        dependencyRequestListener = new DependencyRequestListener();
+        dependencyRequestListener.start();
 
         ServerSocket serverSocket = null;
         try {
@@ -81,7 +78,7 @@ public class CompilationListener extends Thread{
                         Type type = new TypeToken<HashMap<String, String>>(){}.getType();
                         HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
                         dependencyMap.putAll(tempDependencyMap);
-                        dependencyProvider.setDependencyMap(this.dependencyMap);
+                        dependencyRequestListener.setDependencyMap(this.dependencyMap);
                     }
                 }
 
