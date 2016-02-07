@@ -56,6 +56,7 @@ public class DependencyResponceListener extends Thread{
                 testString = testString.replace("/", ".");
                 testString = testString.replace("\\", ".");
                 testString = testString.substring(1);
+                testString = testString.replace(".class", "");
                 log.debug(testString);
 
                 if (dependencies.contains(testString)) {
