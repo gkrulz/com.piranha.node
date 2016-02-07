@@ -47,7 +47,6 @@ public class DependencyResolver{
                 dependencyRequest.addProperty("dependency", dependency);
 
                 comm.writeToSocket(socket, dependencyRequest);
-                socket.close();
 
 //                ServerSocket serverSocket = new ServerSocket(9007);
 //                socket = serverSocket.accept();
@@ -63,7 +62,7 @@ public class DependencyResolver{
     }
 
     public void readAndSave(Socket socket, String className) throws IOException {
-        String path = properties.getProperty("DESTINATION_PATH");
+        String path = properties.getProperty("DESTINATION_PATH") + "/";
         className = className.replace(".", "/") + ".class";
         File file = new File(path + className);
         FileOutputStream fileOutputStream = new FileOutputStream(file);

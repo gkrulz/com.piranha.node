@@ -49,6 +49,8 @@ public class DependencyProvider extends Thread{
 
                     this.sendDependency(file, socket);
                 }
+                socket.close();
+                log.debug("successfully sent dependency class file");
             } catch (IOException e) {
                 log.error("Error", e);
             }

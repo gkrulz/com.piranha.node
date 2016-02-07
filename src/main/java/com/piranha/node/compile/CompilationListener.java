@@ -32,6 +32,7 @@ public class CompilationListener extends Thread{
         DependencyProvider dependencyProvider = null;
         try {
             dependencyProvider = new DependencyProvider();
+            dependencyProvider.start();
         } catch (IOException e) {
             log.error("Error", e);
         }

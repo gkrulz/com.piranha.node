@@ -30,6 +30,5 @@ public class Communication {
         OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
         out.write(data.toString());
         out.flush();
-        out.close();
     }
 }
