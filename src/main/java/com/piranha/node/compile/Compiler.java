@@ -3,6 +3,8 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.internal.bind.ArrayTypeAdapter;
+import com.piranha.node.comm.DependencyResponceListener;
 import com.piranha.node.constants.Constants;
 import org.apache.log4j.Logger;
 
@@ -35,6 +37,7 @@ public class Compiler extends Thread {
     @Override
     public void run() {
         JsonArray dependencies = classJson.get("dependencies").getAsJsonArray();
+        ArrayList<String> dependencyList = new ArrayList<>();
 
         if (dependencies.size() > 0) {
             DependencyResolver dependencyResolver = null;
@@ -43,12 +46,26 @@ public class Compiler extends Thread {
             } catch (IOException e) {
                 log.error("Error", e);
             }
+
+            for (JsonElement dependency : dependencies) {
+                String className  = dependency.getAsString();
+                dependencyList.add(className);
+            }
+
+            DependencyResponceListener dependencyResponceListener =
+                    new DependencyResponceListener(dependencies.size(), dependencyList);
+            dependencyResponceListener.start();
             for (int i = 0; i < dependencies.size(); i++) {
                 String dependency = dependencies.get(i).getAsString();
                 String ipAddress = dependencyMap.get(dependency);
 
                 dependencyResolver.resolve(ipAddress, dependency);
+            }
 
+            try {
+                dependencyResponceListener.join();
+            } catch (InterruptedException e) {
+                log.error("Error", e);
             }
         }
 

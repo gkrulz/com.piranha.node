@@ -45,24 +45,10 @@ public class DependencyResolver{
                 dependencyRequest.addProperty("dependency", dependency);
 
                 comm.writeToSocket(socket, dependencyRequest);
-
-                this.readAndSave(socket, dependency);
                 socket.close();
-
-                log.debug("Dependency received");
             }
         } catch (IOException e) {
             log.error("Error", e);
         }
-    }
-
-    public void readAndSave(Socket socket, String className) throws IOException {
-        String path = Constants.DESTINATION_PATH + "/";
-        className = className.replace(".", "/") + ".class";
-        File file = new File(path + className);
-        file.getParentFile().mkdirs();
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-        IOUtils.copy(socket.getInputStream(), fileOutputStream);
     }
 }

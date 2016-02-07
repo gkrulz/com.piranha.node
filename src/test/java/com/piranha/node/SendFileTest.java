@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -11,6 +12,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 /**
  * Created by Padmaka on 2/8/16.
@@ -47,7 +50,7 @@ public class SendFileTest {
 
         JsonObject requestJson = new JsonObject();
         requestJson.addProperty("className", className);
-        requestJson.addProperty("file", new String(bytes));
+        requestJson.addProperty("file", new String(Base64.encodeBase64(bytes)));
 
         comm.writeToSocket(socket, requestJson);
     }

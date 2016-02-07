@@ -4,10 +4,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -41,8 +44,12 @@ public class DependencyProvider extends Thread {
 
             if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
 
-                this.sendDependency(file, socket);
+                InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+                InetAddress inetAddress = ipAddress.getAddress();
+                Socket responseSocket = new Socket(inetAddress.getHostAddress(), 10501);
+                this.sendDependency(file, responseSocket);
                 log.debug("successfully sent dependency: " + file.getName());
+                responseSocket.close();
             }
             socket.close();
         } catch (IOException e) {
@@ -60,7 +67,7 @@ public class DependencyProvider extends Thread {
 
         JsonObject requestJson = new JsonObject();
         requestJson.addProperty("className", className);
-        requestJson.addProperty("file", new String(bytes));
+        requestJson.addProperty("file", new String(Base64.encodeBase64(bytes)));
 
         comm.writeToSocket(socket, requestJson);
     }

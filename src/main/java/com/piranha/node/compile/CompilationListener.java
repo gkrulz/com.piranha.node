@@ -3,6 +3,7 @@ package com.piranha.node.compile;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.comm.DependencyRequestListener;
+import com.piranha.node.comm.DependencyResponceListener;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
