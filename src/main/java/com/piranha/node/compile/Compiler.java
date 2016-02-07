@@ -96,11 +96,10 @@ public class Compiler extends Thread {
         classString.append(classJson.get("classString").getAsString() + "}");
         try {
             this.compile(classJson.get("className").getAsString(), classString.toString());
-            log.debug("Stop");
         } catch (Exception e) {
             log.error("", e);
         }
-        log.debug(classString);
+//        log.debug(classString);
     }
 
     public void compile(String className, String classString) throws Exception {
