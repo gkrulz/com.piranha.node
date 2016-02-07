@@ -65,13 +65,13 @@ public class CompilationListener extends Thread{
                         compiler.start();
                     }
 
-                    for (Thread compiler : compilers) {
-                        try {
-                            compiler.join();
-                        } catch (InterruptedException e) {
-                            log.error("Error", e);
-                        }
-                    }
+//                    for (Thread compiler : compilers) {
+//                        try {
+//                            compiler.join();
+//                        } catch (InterruptedException e) {
+//                            log.error("Error", e);
+//                        }
+//                    }
 
                 } else if (incomingMessage.charAt(0) == '{') {
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();

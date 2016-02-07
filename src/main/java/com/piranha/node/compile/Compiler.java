@@ -79,11 +79,11 @@ public class Compiler extends Thread {
 //                log.error("Error", e);
 //            }
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                log.error("Error", e);
-            }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                log.error("Error", e);
+//            }
         }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
