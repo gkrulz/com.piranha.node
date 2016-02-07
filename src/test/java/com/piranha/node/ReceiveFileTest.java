@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -50,7 +51,7 @@ public class ReceiveFileTest {
                 file.getParentFile().mkdirs();
                 FileOutputStream fileOutputStream = new FileOutputStream(file);
 
-                byte[] bytes = responceJson.get("file").getAsString().getBytes();
+                byte[] bytes = Base64.decodeBase64(responceJson.get("file").getAsString());
 
                 ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 
