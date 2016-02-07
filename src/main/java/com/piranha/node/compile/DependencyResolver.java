@@ -39,7 +39,9 @@ public class DependencyResolver{
 
         try {
             log.debug(dependency);
-            if (!ipAddress.equals(localIpAddress.getHostAddress())) {
+//            log.debug(ipAddress + " == " + localIpAddress.getHostAddress() + " - " + ipAddress.equals(localIpAddress.getHostAddress()));
+            if (!(ipAddress.equals(localIpAddress.getHostAddress()))) {
+                log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
                 Socket socket = new Socket(ipAddress, 10500);
 
                 JsonObject dependencyRequest = new JsonObject();
@@ -65,6 +67,7 @@ public class DependencyResolver{
         String path = properties.getProperty("DESTINATION_PATH") + "/";
         className = className.replace(".", "/") + ".class";
         File file = new File(path + className);
+        file.getParentFile().mkdirs();
         FileOutputStream fileOutputStream = new FileOutputStream(file);
 
         IOUtils.copy(socket.getInputStream(), fileOutputStream);

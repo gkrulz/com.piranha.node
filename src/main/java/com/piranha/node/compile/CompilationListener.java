@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -30,6 +31,8 @@ public class CompilationListener extends Thread{
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
         DependencyProvider dependencyProvider = null;
+        ArrayList<Thread> compilers = new ArrayList<>();
+
         try {
             dependencyProvider = new DependencyProvider();
             dependencyProvider.start();
@@ -60,8 +63,18 @@ public class CompilationListener extends Thread{
                     JsonArray incomingMsgJson = parser.parse(incomingMessage).getAsJsonArray();
                     for (JsonElement classJson : incomingMsgJson) {
                         Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap);
-                        compiler.start();
+                        compilers.add(compiler);
                     }
+
+                    for (Thread compiler : compilers) {
+                        try {
+                            compiler.join();
+                        } catch (InterruptedException e) {
+                            log.error("Error", e);
+                        }
+                    }
+
+                    compilers.forEach(Thread::start);
 
                 } else if (incomingMessage.charAt(0) == '{') {
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
