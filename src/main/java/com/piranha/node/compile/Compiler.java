@@ -14,8 +14,10 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -48,12 +50,21 @@ public class Compiler extends Thread {
             }
 
             for (JsonElement dependency : dependencies) {
-                String className  = dependency.getAsString();
-                dependencyList.add(className);
+                InetAddress localIpAddress= null;
+                try {
+                    localIpAddress = InetAddress.getLocalHost();
+                } catch (UnknownHostException e) {
+                    log.error("Error", e);
+                }
+
+                if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
+                    String className  = dependency.getAsString();
+                    dependencyList.add(className);
+                }
             }
 
             DependencyResponceListener dependencyResponceListener =
-                    new DependencyResponceListener(dependencies.size(), dependencyList);
+                    new DependencyResponceListener(dependencyList);
             dependencyResponceListener.start();
             for (int i = 0; i < dependencies.size(); i++) {
                 String dependency = dependencies.get(i).getAsString();
