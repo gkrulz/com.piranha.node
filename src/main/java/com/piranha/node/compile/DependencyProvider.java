@@ -39,7 +39,7 @@ public class DependencyProvider extends Thread{
                 String requestString = comm.readFromSocket(socket);
                 JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
-                String path = properties.getProperty("DESTINATION_PATH");
+                String path = properties.getProperty("DESTINATION_PATH") + "/";
                 String packagePath = requestJson.get("dependency").getAsString();
                 packagePath = packagePath.replace(".", "/") + ".class";
 

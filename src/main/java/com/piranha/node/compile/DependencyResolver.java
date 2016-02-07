@@ -3,14 +3,12 @@ package com.piranha.node.compile;
 import com.google.gson.JsonObject;
 import com.piranha.node.util.Communication;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;
@@ -49,9 +47,6 @@ public class DependencyResolver{
                 dependencyRequest.addProperty("dependency", dependency);
 
                 comm.writeToSocket(socket, dependencyRequest);
-
-//                ServerSocket serverSocket = new ServerSocket(9007);
-//                socket = serverSocket.accept();
 
                 this.readAndSave(socket, dependency);
                 socket.close();

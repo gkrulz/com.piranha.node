@@ -64,6 +64,7 @@ public class CompilationListener extends Thread{
                     for (JsonElement classJson : incomingMsgJson) {
                         Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap);
                         compilers.add(compiler);
+                        compiler.start();
                     }
 
                     for (Thread compiler : compilers) {
@@ -73,8 +74,6 @@ public class CompilationListener extends Thread{
                             log.error("Error", e);
                         }
                     }
-
-                    compilers.forEach(Thread::start);
 
                 } else if (incomingMessage.charAt(0) == '{') {
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
