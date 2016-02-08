@@ -3,14 +3,16 @@ package com.piranha.node.compile;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.comm.DependencyRequestListener;
-import com.piranha.node.comm.DependencyResponceListener;
+import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,6 +48,7 @@ public class CompilationListener extends Thread{
         }
 
         while (true) {
+            ArrayList<String> locallyUnavailableDependencies = new ArrayList<>();
 
             try {
                 socket = serverSocket.accept();
@@ -56,22 +59,55 @@ public class CompilationListener extends Thread{
             try {
                 String incomingMessage = this.comm.readFromSocket(socket);
 
-
                 if (incomingMessage.charAt(0) == '[') {
                     JsonArray incomingMsgJson = parser.parse(incomingMessage).getAsJsonArray();
+
+                    //resolving the dependencies
+                    for (JsonElement classJson : incomingMsgJson) {
+                        JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
+
+                        for (JsonElement dependency : dependencies){
+                            InetAddress localIpAddress= null;
+                            try {
+                                localIpAddress = InetAddress.getLocalHost();
+                            } catch (UnknownHostException e) {
+                                log.error("Error", e);
+                            }
+
+                            if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
+                                String className  = dependency.getAsString();
+                                locallyUnavailableDependencies.add(className);
+                            }
+                        }
+                    }
+
+                    DependencyResponseListener dependencyResponseListener =
+                            new DependencyResponseListener(locallyUnavailableDependencies);
+                    dependencyResponseListener.start();
+
+                    for (String dependency : locallyUnavailableDependencies) {
+                        String ipAddress = dependencyMap.get(dependency);
+
+                        this.resolve(ipAddress, dependency);
+                    }
+
+                    dependencyResponseListener.join();
+
+
+
                     for (JsonElement classJson : incomingMsgJson) {
                         Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap);
                         compilers.add(compiler);
                         compiler.start();
                     }
 
-//                    for (Thread compiler : compilers) {
-//                        try {
-//                            compiler.join();
-//                        } catch (InterruptedException e) {
-//                            log.error("Error", e);
-//                        }
-//                    }
+                    for (Thread compiler : compilers) {
+                        try {
+                            compiler.join();
+                        } catch (InterruptedException e) {
+                            log.error("Error", e);
+                        }
+                    }
 
                 } else if (incomingMessage.charAt(0) == '{') {
                     JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
@@ -85,10 +121,35 @@ public class CompilationListener extends Thread{
 
                 log.debug(gson.toJson(dependencyMap));
 
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 log.error("Error", e);
             }
 
+        }
+    }
+
+    public void resolve(String ipAddress, String dependency) {
+        InetAddress localIpAddress= null;
+        try {
+            localIpAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            log.error("Error", e);
+        }
+
+        try {
+            if (!(ipAddress.equals(localIpAddress.getHostAddress()))) {
+                log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
+                Socket socket = new Socket(ipAddress, 10500);
+
+                JsonObject dependencyRequest = new JsonObject();
+                dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
+                dependencyRequest.addProperty("dependency", dependency);
+
+                comm.writeToSocket(socket, dependencyRequest);
+                socket.close();
+            }
+        } catch (IOException e) {
+            log.error("Error", e);
         }
     }
 }

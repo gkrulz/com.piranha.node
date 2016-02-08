@@ -1,12 +1,9 @@
 package com.piranha.node.comm;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-import com.sun.org.apache.xml.internal.security.transforms.TransformationException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -22,13 +19,13 @@ import java.util.ArrayList;
 /**
  * Created by Padmaka on 2/7/16.
  */
-public class DependencyResponceListener extends Thread{
-    private static final Logger log = Logger.getLogger(DependencyResponceListener.class);
+public class DependencyResponseListener extends Thread{
+    private static final Logger log = Logger.getLogger(DependencyResponseListener.class);
     private Communication comm;
     private int noOfIterations;
     private ArrayList<String> dependencies;
 
-    public DependencyResponceListener(ArrayList<String> dependencies) {
+    public DependencyResponseListener(ArrayList<String> dependencies) {
         comm = new Communication();
         this. noOfIterations = dependencies.size();
         this.dependencies = dependencies;
@@ -59,7 +56,7 @@ public class DependencyResponceListener extends Thread{
                 testString = testString.replace(".class", "");
                 log.debug(testString);
 
-//                if (dependencies.contains(testString)) {
+                if (dependencies.contains(testString)) {
                     String fileName = responseJson.get("className").getAsString();
                     fileName = fileName.replace("/", Constants.PATH_SEPARATOR);
                     fileName = fileName.replace("\\", Constants.PATH_SEPARATOR);
@@ -75,21 +72,12 @@ public class DependencyResponceListener extends Thread{
                     IOUtils.copy(bis, fileOutputStream);
                     fileOutputStream.close();
                     i++;
-//                }
+                    log.debug("Dependency " + testString + " received");
+                }
 
             } catch (IOException e) {
                 log.error("Error", e);
             }
         }
-    }
-
-    public void readAndSave(Socket socket, String className) throws IOException {
-        String path = Constants.DESTINATION_PATH + "/";
-        className = className.replace(".", "/") + ".class";
-        File file = new File(path + className);
-        file.getParentFile().mkdirs();
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-        IOUtils.copy(socket.getInputStream(), fileOutputStream);
     }
 }

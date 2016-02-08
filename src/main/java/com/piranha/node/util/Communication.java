@@ -19,12 +19,8 @@ public class Communication {
 
     public void writeToSocket(Socket socket, JsonElement data) throws IOException {
         OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
-//        System.out.printf(data.toString());
         out.write(data.toString());
         out.flush();
         out.close();
-
-//        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-//        out.println(data.toString());
     }
 }

@@ -3,8 +3,7 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.internal.bind.ArrayTypeAdapter;
-import com.piranha.node.comm.DependencyResponceListener;
+import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
 import org.apache.log4j.Logger;
 
@@ -14,10 +13,7 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -38,53 +34,35 @@ public class Compiler extends Thread {
 
     @Override
     public void run() {
-        JsonArray dependencies = classJson.get("dependencies").getAsJsonArray();
-        ArrayList<String> dependencyList = new ArrayList<>();
+//        JsonArray dependencies = classJson.get("dependencies").getAsJsonArray();
+//        ArrayList<String> locallyUnavailableDependencies = new ArrayList<>();
 
-        if (dependencies.size() > 0) {
-            DependencyResolver dependencyResolver = null;
-            try {
-                dependencyResolver = new DependencyResolver();
-            } catch (IOException e) {
-                log.error("Error", e);
-            }
-
-            for (JsonElement dependency : dependencies) {
-                InetAddress localIpAddress= null;
-                try {
-                    localIpAddress = InetAddress.getLocalHost();
-                } catch (UnknownHostException e) {
-                    log.error("Error", e);
-                }
-
-                if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
-                    String className  = dependency.getAsString();
-                    dependencyList.add(className);
-                }
-            }
-
-            DependencyResponceListener dependencyResponceListener =
-                    new DependencyResponceListener(dependencyList);
-            dependencyResponceListener.start();
-            for (int i = 0; i < dependencies.size(); i++) {
-                String dependency = dependencies.get(i).getAsString();
-                String ipAddress = dependencyMap.get(dependency);
-
-                dependencyResolver.resolve(ipAddress, dependency);
-            }
-
-//            try {
-//                dependencyResponceListener.join();
-//            } catch (InterruptedException e) {
-//                log.error("Error", e);
+//        if (dependencies.size() > 0) {
+//
+//            for (JsonElement dependency : dependencies) {
+//                InetAddress localIpAddress= null;
+//                try {
+//                    localIpAddress = InetAddress.getLocalHost();
+//                } catch (UnknownHostException e) {
+//                    log.error("Error", e);
+//                }
+//
+//                if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
+//                    String className  = dependency.getAsString();
+//                    locallyUnavailableDependencies.add(className);
+//                }
 //            }
-
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                log.error("Error", e);
+//
+//            DependencyResponseListener dependencyResponceListener =
+//                    new DependencyResponseListener(locallyUnavailableDependencies);
+//            dependencyResponceListener.start();
+//            for (int i = 0; i < dependencies.size(); i++) {
+//                String dependency = dependencies.get(i).getAsString();
+//                String ipAddress = dependencyMap.get(dependency);
+//
+////                this.resolve(ipAddress, dependency);
 //            }
-        }
+//        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
@@ -99,7 +77,6 @@ public class Compiler extends Thread {
         } catch (Exception e) {
             log.error("", e);
         }
-//        log.debug(classString);
     }
 
     public void compile(String className, String classString) throws Exception {
