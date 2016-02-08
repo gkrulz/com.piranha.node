@@ -74,7 +74,9 @@ public class CompilationListener extends Thread{
                                 log.error("Error", e);
                             }
 
-                            if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
+//                            log.debug(dependency.getAsString());
+//                            log.debug(dependencyMap);
+                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress.getHostAddress()))) {
                                 String className  = dependency.getAsString();
                                 locallyUnavailableDependencies.add(className);
                             }
