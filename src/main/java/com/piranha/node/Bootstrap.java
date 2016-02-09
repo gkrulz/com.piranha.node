@@ -43,8 +43,8 @@ public class Bootstrap {
             CompilationListener compilationListener = new CompilationListener();
             compilationListener.start();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException e) {
+            log.error("Error", e);
         }
     }
 }

@@ -52,7 +52,7 @@ public class DependencyProvider extends Thread {
                 responseSocket.close();
             }
             socket.close();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             log.error("Error", e);
         }
     }

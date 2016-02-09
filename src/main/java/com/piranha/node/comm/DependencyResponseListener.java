@@ -75,7 +75,7 @@ public class DependencyResponseListener extends Thread{
                     log.debug("Dependency " + testString + " received");
                 }
 
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 log.error("Error", e);
             }
         }

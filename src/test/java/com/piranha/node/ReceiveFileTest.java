@@ -58,7 +58,7 @@ public class ReceiveFileTest {
                 IOUtils.copy(bis, fileOutputStream);
                 fileOutputStream.close();
 
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 log.error("Error", e);
             }
         }
