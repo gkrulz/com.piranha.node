@@ -79,5 +79,10 @@ public class DependencyResponseListener extends Thread{
                 log.error("Error", e);
             }
         }
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            log.error("Error", e);
+        }
     }
 }

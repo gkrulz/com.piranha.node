@@ -76,6 +76,7 @@ public class Compiler extends Thread {
             this.compile(classJson.get("className").getAsString(), classString.toString());
         } catch (Exception e) {
             log.error("", e);
+            System.exit(0);
         }
     }
 

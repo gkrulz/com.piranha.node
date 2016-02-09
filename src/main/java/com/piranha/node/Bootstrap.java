@@ -26,7 +26,7 @@ public class Bootstrap {
         } catch (UnknownHostException e) {
             log.error("Error", e);
         }
-        log.info("IP: " + localIpAddress);
+        log.info("IP: " + localIpAddress.getHostAddress());
 
         Communication comm = new Communication();
         Properties properties = new Properties();
