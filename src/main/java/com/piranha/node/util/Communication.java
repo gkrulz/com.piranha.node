@@ -11,10 +11,13 @@ import java.nio.charset.StandardCharsets;
  */
 public class Communication {
 
-    public String readFromSocket(Socket socket) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    public String readFromSocket(Socket socket) throws IOException, ClassNotFoundException {
+//        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        return in.readLine();
+//        return in.readLine();
+
+        ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+        return (String) in.readObject();
     }
 
     public void writeToSocket(Socket socket, JsonElement data) throws IOException {

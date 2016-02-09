@@ -123,7 +123,7 @@ public class CompilationListener extends Thread{
 
                 log.debug(gson.toJson(dependencyMap));
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | InterruptedException | ClassNotFoundException e) {
                 log.error("Error", e);
             }
 
