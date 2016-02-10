@@ -77,6 +77,8 @@ public class CompilationListener extends Thread{
                         }
                     }
 
+                    log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
+
                     DependencyResponseListener dependencyResponseListener =
                             new DependencyResponseListener(locallyUnavailableDependencies);
                     dependencyResponseListener.start();
