@@ -27,8 +27,7 @@ public class DependencyResponseListener extends Thread{
 
     public DependencyResponseListener() {
         comm = new Communication();
-        this. noOfIterations = dependencies.size();
-        this.dependencies = dependencies;
+        this.dependencies = new ArrayList<>();
     }
 
     @Override
