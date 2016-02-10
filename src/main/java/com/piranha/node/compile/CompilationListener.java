@@ -45,6 +45,10 @@ public class CompilationListener extends Thread{
             log.error("Error", e);
         }
 
+        DependencyResponseListener dependencyResponseListener =
+                new DependencyResponseListener();
+        dependencyResponseListener.start();
+
         while (true) {
             ArrayList<String> locallyUnavailableDependencies = new ArrayList<>();
 
@@ -80,9 +84,8 @@ public class CompilationListener extends Thread{
 
                     log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
 
-                    DependencyResponseListener dependencyResponseListener =
-                            new DependencyResponseListener(locallyUnavailableDependencies);
-                    dependencyResponseListener.start();
+                    //add dependencies in each round
+                    dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
 
                     for (String dependency : locallyUnavailableDependencies) {
                         String ipAddress = dependencyMap.get(dependency);

@@ -25,7 +25,7 @@ public class DependencyResponseListener extends Thread{
     private int noOfIterations;
     private ArrayList<String> dependencies;
 
-    public DependencyResponseListener(ArrayList<String> dependencies) {
+    public DependencyResponseListener() {
         comm = new Communication();
         this. noOfIterations = dependencies.size();
         this.dependencies = dependencies;
@@ -78,5 +78,9 @@ public class DependencyResponseListener extends Thread{
                 log.error("Error", e);
             }
         }
+    }
+
+    public void addDependencies(ArrayList<String> dependencies) {
+        this.dependencies.addAll(dependencies);
     }
 }
