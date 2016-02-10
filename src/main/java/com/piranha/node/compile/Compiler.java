@@ -43,7 +43,7 @@ public class Compiler extends Thread {
             File file = new File(currentDir + dependencyPath);
 
             while(!file.exists()) {
-                log.debug("waiting for dependency - " + dependency);
+//                log.debug("waiting for dependency - " + dependency);
             }
         }
 
