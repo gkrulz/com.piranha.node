@@ -1,9 +1,7 @@
 package com.piranha.node.compile;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
 import org.apache.log4j.Logger;
 
@@ -34,35 +32,6 @@ public class Compiler extends Thread {
 
     @Override
     public void run() {
-//        JsonArray dependencies = classJson.get("dependencies").getAsJsonArray();
-//        ArrayList<String> locallyUnavailableDependencies = new ArrayList<>();
-
-//        if (dependencies.size() > 0) {
-//
-//            for (JsonElement dependency : dependencies) {
-//                InetAddress localIpAddress= null;
-//                try {
-//                    localIpAddress = InetAddress.getLocalHost();
-//                } catch (UnknownHostException e) {
-//                    log.error("Error", e);
-//                }
-//
-//                if (!(dependencyMap.get(dependency).equals(localIpAddress.getHostAddress()))) {
-//                    String className  = dependency.getAsString();
-//                    locallyUnavailableDependencies.add(className);
-//                }
-//            }
-//
-//            DependencyResponseListener dependencyResponceListener =
-//                    new DependencyResponseListener(locallyUnavailableDependencies);
-//            dependencyResponceListener.start();
-//            for (int i = 0; i < dependencies.size(); i++) {
-//                String dependency = dependencies.get(i).getAsString();
-//                String ipAddress = dependencyMap.get(dependency);
-//
-////                this.resolve(ipAddress, dependency);
-//            }
-//        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
@@ -84,10 +53,6 @@ public class Compiler extends Thread {
 
         JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
         if (jc == null) throw new Exception("Compiler unavailable");
-
-//        String code = "public class CustomProcessor { " +
-//                "public static void main(String[] args) { " +
-//                "System.out.println(\"New class new\"); }}";
 
         JavaSourceFromString jsfs = new JavaSourceFromString(className, classString);
 

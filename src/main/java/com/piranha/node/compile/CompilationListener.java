@@ -9,10 +9,8 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -67,16 +65,12 @@ public class CompilationListener extends Thread{
                         JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
                         for (JsonElement dependency : dependencies){
-                            InetAddress localIpAddress= null;
-                            try {
-                                localIpAddress = InetAddress.getLocalHost();
-                            } catch (UnknownHostException e) {
-                                log.error("Error", e);
-                            }
+
+                              String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
 
 //                            log.debug(dependency.getAsString());
 //                            log.debug(dependencyMap);
-                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress.getHostAddress()))) {
+                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress))) {
                                 String className  = dependency.getAsString();
                                 locallyUnavailableDependencies.add(className);
                             }
@@ -130,16 +124,10 @@ public class CompilationListener extends Thread{
         }
     }
 
-    public void resolve(String ipAddress, String dependency) {
-        InetAddress localIpAddress= null;
-        try {
-            localIpAddress = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            log.error("Error", e);
-        }
+    public void resolve(String ipAddress, String dependency) throws IOException {
+        String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
 
-        try {
-            if (!(ipAddress.equals(localIpAddress.getHostAddress()))) {
+            if (!(ipAddress.equals(localIpAddress))) {
                 log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
                 Socket socket = new Socket(ipAddress, 10500);
 
@@ -150,8 +138,5 @@ public class CompilationListener extends Thread{
                 comm.writeToSocket(socket, dependencyRequest);
                 socket.close();
             }
-        } catch (IOException e) {
-            log.error("Error", e);
-        }
     }
 }

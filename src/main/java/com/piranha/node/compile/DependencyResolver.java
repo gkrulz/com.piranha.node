@@ -1,18 +1,13 @@
 package com.piranha.node.compile;
 
 import com.google.gson.JsonObject;
-import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -25,18 +20,13 @@ public class DependencyResolver{
         this.comm = new Communication();
     }
 
-    public void resolve(String ipAddress, String dependency) {
-        InetAddress localIpAddress= null;
-        try {
-            localIpAddress = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            log.error("Error", e);
-        }
+    public void resolve(String ipAddress, String dependency) throws IOException {
 
-        try {
+        String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+
             log.debug(dependency);
 //            log.debug(ipAddress + " == " + localIpAddress.getHostAddress() + " - " + ipAddress.equals(localIpAddress.getHostAddress()));
-            if (!(ipAddress.equals(localIpAddress.getHostAddress()))) {
+            if (!(ipAddress.equals(localIpAddress))) {
                 log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
                 Socket socket = new Socket(ipAddress, 10500);
 
@@ -47,8 +37,5 @@ public class DependencyResolver{
                 comm.writeToSocket(socket, dependencyRequest);
                 socket.close();
             }
-        } catch (IOException e) {
-            log.error("Error", e);
-        }
     }
 }
