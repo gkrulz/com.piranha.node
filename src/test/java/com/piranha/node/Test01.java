@@ -1,10 +1,7 @@
 package com.piranha.node;
 
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Enumeration;
 
 /**
@@ -34,7 +31,11 @@ public class Test01 {
         System.out.println(path + "\n");
 
         Test01 test01 = new Test01();
-        test01.getIps();
+        try {
+            System.out.println(test01.getFirstNonLoopbackAddress(true, false));
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
     }
 
     public void getIps () {
@@ -65,5 +66,30 @@ public class Test01 {
         } catch (SocketException e) {
             System.out.println(" (error retrieving network interface list)");
         }
+    }
+
+    private static InetAddress getFirstNonLoopbackAddress(boolean preferIpv4, boolean preferIPv6) throws SocketException {
+        Enumeration en = NetworkInterface.getNetworkInterfaces();
+        while (en.hasMoreElements()) {
+            NetworkInterface i = (NetworkInterface) en.nextElement();
+            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
+                InetAddress addr = (InetAddress) en2.nextElement();
+                if (!addr.isLoopbackAddress()) {
+                    if (addr instanceof Inet4Address) {
+                        if (preferIPv6) {
+                            continue;
+                        }
+                        return addr;
+                    }
+                    if (addr instanceof Inet6Address) {
+                        if (preferIpv4) {
+                            continue;
+                        }
+                        return addr;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
