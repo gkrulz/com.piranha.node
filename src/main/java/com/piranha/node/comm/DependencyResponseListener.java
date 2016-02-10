@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by Padmaka on 2/7/16.
@@ -23,11 +24,11 @@ public class DependencyResponseListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyResponseListener.class);
     private Communication comm;
     private int noOfIterations;
-    private ArrayList<String> dependencies;
+    private HashSet<String> dependencies;
 
     public DependencyResponseListener() {
         comm = new Communication();
-        this.dependencies = new ArrayList<>();
+        this.dependencies = new HashSet<>();
     }
 
     @Override
