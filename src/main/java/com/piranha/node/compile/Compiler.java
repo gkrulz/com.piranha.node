@@ -44,11 +44,11 @@ public class Compiler extends Thread {
 
             while(!file.exists()) {
 //                log.debug("waiting for dependency - " + dependency);
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    log.error("Error", e);
+//                }
             }
         }
 

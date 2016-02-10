@@ -53,7 +53,7 @@ public class DependencyResponseListener extends Thread{
                 testString = testString.replace("\\", ".");
                 testString = testString.substring(1);
                 testString = testString.replace(".class", "");
-                log.debug(testString);
+//                log.debug(testString);
 
 //                if (dependencies.contains(testString)) {
                     String fileName = responseJson.get("className").getAsString();
