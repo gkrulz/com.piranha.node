@@ -55,7 +55,7 @@ public class DependencyResponseListener extends Thread{
                 testString = testString.replace(".class", "");
                 log.debug(testString);
 
-                if (dependencies.contains(testString)) {
+//                if (dependencies.contains(testString)) {
                     String fileName = responseJson.get("className").getAsString();
                     fileName = fileName.replace("/", Constants.PATH_SEPARATOR);
                     fileName = fileName.replace("\\", Constants.PATH_SEPARATOR);
@@ -72,7 +72,7 @@ public class DependencyResponseListener extends Thread{
                     fileOutputStream.close();
 
                     log.debug("Dependency " + testString + " received");
-                }
+//                }
 
             } catch (IOException | ClassNotFoundException e) {
                 log.error("Error", e);
