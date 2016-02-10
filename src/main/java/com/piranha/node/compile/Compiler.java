@@ -42,13 +42,15 @@ public class Compiler extends Thread {
             String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
             File file = new File(currentDir + dependencyPath);
 
+            log.debug(currentDir + dependencyPath);
+
             while(!file.exists()) {
-                log.debug("waiting for dependency - " + dependency);
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
+//                log.debug("waiting for dependency - " + dependency);
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    log.error("Error", e);
+//                }
             }
         }
 
