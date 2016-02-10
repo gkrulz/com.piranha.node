@@ -38,14 +38,14 @@ public class Compiler extends Thread {
         JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
         for (JsonElement dependency : dependencies) {
-            String currentDir = System.getProperty("user.dir") + Constants.PATH_SEPARATOR;
+            String currentDir = System.getProperty("user.dir") + Constants.PATH_SEPARATOR + "destination" + Constants.PATH_SEPARATOR;
             String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
             File file = new File(currentDir + dependencyPath);
 
             log.debug(currentDir + dependencyPath);
 
             while(!file.exists()) {
-//                log.debug("waiting for dependency - " + dependency);
+                log.debug("waiting for dependency - " + dependency);
 //                try {
 //                    Thread.sleep(100);
 //                } catch (InterruptedException e) {
