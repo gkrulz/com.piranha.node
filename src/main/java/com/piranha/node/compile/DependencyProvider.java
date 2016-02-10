@@ -43,9 +43,9 @@ public class DependencyProvider extends Thread {
 
             File file = new File(path + packagePath);
 
-            log.debug("At the time request file " + packagePath + " exist - " + file.exists());
-
-            while (!file.exists())
+            while (!file.exists()){
+                log.debug("At the time request file " + packagePath + " exist - " + file.exists());
+            }
 
             if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
 
