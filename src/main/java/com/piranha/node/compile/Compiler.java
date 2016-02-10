@@ -43,12 +43,12 @@ public class Compiler extends Thread {
             File file = new File(currentDir + dependencyPath);
 
             while(!file.exists()) {
-//                log.debug("waiting for dependency - " + dependency);
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
+                log.debug("waiting for dependency - " + dependency);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
             }
         }
 
