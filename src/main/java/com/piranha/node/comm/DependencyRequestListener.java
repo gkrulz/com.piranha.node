@@ -35,7 +35,6 @@ public class DependencyRequestListener extends Thread{
         }
 
         while (true) {
-
             try {
                 Socket socket = serverSocket.accept();
 

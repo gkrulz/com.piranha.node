@@ -42,8 +42,7 @@ public class DependencyResponseListener extends Thread{
             log.error("Error", e);
         }
 
-        int i = 0;
-        while (i < noOfIterations) {
+        while (true) {
             try {
                 Socket socket = serverSocket.accept();
 
@@ -71,18 +70,13 @@ public class DependencyResponseListener extends Thread{
 
                     IOUtils.copy(bis, fileOutputStream);
                     fileOutputStream.close();
-                    i++;
+
                     log.debug("Dependency " + testString + " received");
                 }
 
             } catch (IOException | ClassNotFoundException e) {
                 log.error("Error", e);
             }
-        }
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            log.error("Error", e);
         }
     }
 }

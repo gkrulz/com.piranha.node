@@ -1,8 +1,10 @@
 package com.piranha.node.compile;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.piranha.node.constants.Constants;
+import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
 import javax.tools.JavaCompiler;
@@ -32,6 +34,18 @@ public class Compiler extends Thread {
 
     @Override
     public void run() {
+        //resolving the dependencies
+        JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
+
+        for (JsonElement dependency : dependencies) {
+            String currentDir = System.getProperty("user.dir") + Constants.PATH_SEPARATOR;
+            String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
+            File file = new File(currentDir + dependencyPath);
+
+            while(!file.exists()) {
+                log.debug("waiting for dependency - " + dependency);
+            }
+        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
