@@ -39,12 +39,6 @@ public class DependencyRequestListener extends Thread{
             try {
                 Socket socket = serverSocket.accept();
 
-                try {
-                    log.debug(comm.readFromSocket(socket));
-                } catch (ClassNotFoundException e) {
-                    log.error("Error", e);
-                }
-
                 DependencyProvider dependencyProvider = new DependencyProvider(socket);
                 dependencyProvider.setDependencyMap(this.dependencyMap);
                 dependencyProvider.start();

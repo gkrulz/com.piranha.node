@@ -34,6 +34,7 @@ public class DependencyProvider extends Thread {
 
         try {
             String requestString = comm.readFromSocket(socket);
+            log.debug(requestString);
             JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
             String path = Constants.DESTINATION_PATH + "/";
