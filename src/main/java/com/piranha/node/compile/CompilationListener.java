@@ -61,36 +61,34 @@ public class CompilationListener extends Thread{
                     JsonArray incomingMsgJson = parser.parse(incomingMessage).getAsJsonArray();
 
                     //resolving the dependencies
-//                    for (JsonElement classJson : incomingMsgJson) {
-//                        JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
-//
-//                        for (JsonElement dependency : dependencies){
-//
-//                              String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
-//
-////                            log.debug(dependency.getAsString());
-////                            log.debug(dependencyMap);
-//                            log.debug(dependencyMap.get(dependency.getAsString()) + " and " + localIpAddress);
-//                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress))) {
-//                                String className  = dependency.getAsString();
-//                                locallyUnavailableDependencies.add(className);
-//                            }
-//                        }
-//                    }
+                    for (JsonElement classJson : incomingMsgJson) {
+                        JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
-//                    log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
+                        for (JsonElement dependency : dependencies){
 
-//                    DependencyResponseListener dependencyResponseListener =
-//                            new DependencyResponseListener(locallyUnavailableDependencies);
-//                    dependencyResponseListener.start();
-//
-//                    for (String dependency : locallyUnavailableDependencies) {
-//                        String ipAddress = dependencyMap.get(dependency);
-//
-//                        this.resolve(ipAddress, dependency);
-//                    }
-//
-//                    dependencyResponseListener.join();
+                              String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+
+//                            log.debug(dependency.getAsString());
+//                            log.debug(dependencyMap);
+                            log.debug(dependencyMap.get(dependency.getAsString()) + " and " + localIpAddress);
+                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress))) {
+                                String className  = dependency.getAsString();
+                                locallyUnavailableDependencies.add(className);
+                            }
+                        }
+                    }
+
+                    log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
+
+                    DependencyResponseListener dependencyResponseListener =
+                            new DependencyResponseListener(locallyUnavailableDependencies);
+                    dependencyResponseListener.start();
+
+                    for (String dependency : locallyUnavailableDependencies) {
+                        String ipAddress = dependencyMap.get(dependency);
+
+                        this.resolve(ipAddress, dependency);
+                    }
 
 
 
