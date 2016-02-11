@@ -62,6 +62,7 @@ public class DependencyResponseListener extends Thread{
                 if (dependencies.contains(testString) && !(fileWriters.keySet().contains(testString))) {
                     FileWriter fileWriter = new FileWriter(responseJson, testString);
                     fileWriters.put(testString, fileWriter);
+                    fileWriter.start();
                 }
 
             } catch (IOException | ClassNotFoundException e) {
