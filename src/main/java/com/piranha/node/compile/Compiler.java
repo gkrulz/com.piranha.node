@@ -58,13 +58,21 @@ public class Compiler extends Thread {
 //                }
 //            }
 
+            while (dependencyResponseListener.getFileWriter(dependency.getAsString()) == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
+            }
+
             //TODO check thread liveliness
             while (dependencyResponseListener.getFileWriter(dependency.getAsString()).isAlive()) {
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
             }
         }
 
