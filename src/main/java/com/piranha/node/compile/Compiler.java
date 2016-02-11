@@ -45,7 +45,7 @@ public class Compiler extends Thread {
 
             log.debug(currentDir + dependencyPath);
 
-            while(!file.exists() && !this.isCompletelyWritten(file)) {
+            while(!(file.exists() && this.isCompletelyWritten(file))) {
 //                log.debug("waiting for dependency - " + dependency);
 //                try {
 //                    Thread.sleep(100);
