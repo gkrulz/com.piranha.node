@@ -32,6 +32,7 @@ public class DependencyResponseListener extends Thread{
     public DependencyResponseListener() {
         comm = new Communication();
         this.dependencies = new HashSet<>();
+        this.fileWriters = new HashMap<>();
     }
 
     @Override
