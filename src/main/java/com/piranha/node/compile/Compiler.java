@@ -12,6 +12,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.net.*;
 import java.util.*;
@@ -44,7 +45,7 @@ public class Compiler extends Thread {
 
             log.debug(currentDir + dependencyPath);
 
-            while(!file.exists()) {
+            while(!this.isCompletelyWritten(file)) {
 //                log.debug("waiting for dependency - " + dependency);
 //                try {
 //                    Thread.sleep(100);
@@ -105,5 +106,24 @@ public class Compiler extends Thread {
             throw new Exception("Compilation failed :" + output);
         }
 
+    }
+
+    private boolean isCompletelyWritten(File file) {
+        RandomAccessFile stream = null;
+        try {
+            stream = new RandomAccessFile(file, "rw");
+            return true;
+        } catch (Exception e) {
+            log.info("Skipping file " + file.getName() + " for this iteration due it's not completely written");
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    log.error("Exception during closing file " + file.getName());
+                }
+            }
+        }
+        return false;
     }
 }
