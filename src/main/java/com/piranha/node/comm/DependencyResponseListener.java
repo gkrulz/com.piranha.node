@@ -59,7 +59,7 @@ public class DependencyResponseListener extends Thread{
                 testString = testString.replace(".class", "");
 //                log.debug(testString);
 
-                if (dependencies.contains(testString) && !(fileWriters.keySet().contains(testString))) {
+                if (dependencies.contains(testString) && fileWriters.get(testString) == null) {
                     FileWriter fileWriter = new FileWriter(responseJson, testString);
                     fileWriters.put(testString, fileWriter);
                     fileWriter.start();
