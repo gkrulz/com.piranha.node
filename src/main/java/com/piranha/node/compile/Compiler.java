@@ -56,7 +56,7 @@ public class Compiler extends Thread {
         }
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             log.error("Error", e);
         }
