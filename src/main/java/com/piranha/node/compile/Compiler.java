@@ -54,6 +54,12 @@ public class Compiler extends Thread {
             }
         }
 
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            log.error("Error", e);
+        }
+
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
 
