@@ -3,6 +3,7 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
@@ -25,12 +26,15 @@ public class Compiler extends Thread {
     private Properties properties;
     private JsonObject classJson;
     private HashMap<String, String> dependencyMap;
+    private DependencyResponseListener dependencyResponseListener;
 
-    public Compiler(JsonObject classJson, HashMap<String, String> dependencyMap) throws IOException {
+    public Compiler(JsonObject classJson, HashMap<String, String> dependencyMap,
+                    DependencyResponseListener dependencyResponseListener) throws IOException {
         properties = new Properties();
         properties.load(Compiler.class.getClassLoader().getResourceAsStream("config.properties"));
         this.classJson = classJson;
         this.dependencyMap = dependencyMap;
+        this.dependencyResponseListener = dependencyResponseListener;
     }
 
     @Override
@@ -45,8 +49,17 @@ public class Compiler extends Thread {
 
             log.debug(currentDir + dependencyPath);
 
-            while(!file.exists()) {
+//            while(!file.exists()) {
 //                log.debug("waiting for dependency - " + dependency);
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    log.error("Error", e);
+//                }
+//            }
+
+            //TODO check thread liveliness
+            while (dependencyResponseListener.getFileWriter(dependency.getAsString()).isAlive()) {
 //                try {
 //                    Thread.sleep(100);
 //                } catch (InterruptedException e) {
@@ -55,11 +68,11 @@ public class Compiler extends Thread {
             }
         }
 
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            log.error("Error", e);
-        }
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            log.error("Error", e);
+//        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");

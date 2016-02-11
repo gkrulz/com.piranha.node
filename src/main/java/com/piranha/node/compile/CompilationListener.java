@@ -96,7 +96,7 @@ public class CompilationListener extends Thread{
 
 
                     for (JsonElement classJson : incomingMsgJson) {
-                        Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap);
+                        Compiler compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap, dependencyResponseListener);
                         compilers.add(compiler);
                         compiler.start();
                     }

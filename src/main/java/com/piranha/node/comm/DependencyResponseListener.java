@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
+import com.piranha.node.util.FileWriter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -25,6 +27,7 @@ public class DependencyResponseListener extends Thread{
     private Communication comm;
     private int noOfIterations;
     private HashSet<String> dependencies;
+    private HashMap<String, Thread> fileWriters;
 
     public DependencyResponseListener() {
         comm = new Communication();
@@ -55,23 +58,9 @@ public class DependencyResponseListener extends Thread{
                 testString = testString.replace(".class", "");
 //                log.debug(testString);
 
-                if (dependencies.contains(testString)) {
-                    String fileName = responseJson.get("className").getAsString();
-                    fileName = fileName.replace("/", Constants.PATH_SEPARATOR);
-                    fileName = fileName.replace("\\", Constants.PATH_SEPARATOR);
-
-                    File file = new File(Constants.DESTINATION_PATH + fileName);
-                    file.getParentFile().mkdirs();
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-                    byte[] bytes = Base64.decodeBase64(responseJson.get("file").getAsString());
-
-                    ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-
-                    IOUtils.copy(bis, fileOutputStream);
-                    fileOutputStream.close();
-
-                    log.debug("Dependency " + testString + " received");
+                if (dependencies.contains(testString) && !(fileWriters.keySet().contains(testString))) {
+                    FileWriter fileWriter = new FileWriter(responseJson, testString);
+                    fileWriters.put(testString, fileWriter);
                 }
 
             } catch (IOException | ClassNotFoundException e) {
@@ -82,5 +71,9 @@ public class DependencyResponseListener extends Thread{
 
     public void addDependencies(ArrayList<String> dependencies) {
         this.dependencies.addAll(dependencies);
+    }
+
+    public Thread getFileWriter(String className) {
+        return fileWriters.get(className);
     }
 }
