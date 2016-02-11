@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -22,10 +23,12 @@ public class DependencyProvider extends Thread {
     private Communication comm;
     private HashMap<String, String> dependencyMap;
     private Socket socket;
+    private ArrayList<String> alreadySentDependencies;
 
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
         this.socket = socket;
+        this.alreadySentDependencies = new ArrayList<>();
     }
 
     @Override
@@ -51,12 +54,16 @@ public class DependencyProvider extends Thread {
                 }
             }
 
-            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()) {
+            InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+            InetAddress inetAddress = ipAddress.getAddress();
 
-                InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-                InetAddress inetAddress = ipAddress.getAddress();
+            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()
+                    && alreadySentDependencies.contains(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress())) {
+
+
                 Socket responseSocket = new Socket(inetAddress.getHostAddress(), 10501);
                 this.sendDependency(file, responseSocket);
+                alreadySentDependencies.add(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress());
                 log.debug("successfully sent dependency: " + file.getName());
                 responseSocket.close();
             }
