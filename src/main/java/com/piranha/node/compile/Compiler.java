@@ -45,7 +45,7 @@ public class Compiler extends Thread {
 
             log.debug(currentDir + dependencyPath);
 
-            while(!this.isCompletelyWritten(file)) {
+            while(!file.exists() && !this.isCompletelyWritten(file)) {
 //                log.debug("waiting for dependency - " + dependency);
 //                try {
 //                    Thread.sleep(100);
@@ -109,24 +109,20 @@ public class Compiler extends Thread {
     }
 
     private boolean isCompletelyWritten(File file) {
-        if (file.exists()) {
-            RandomAccessFile stream = null;
-            try {
-                stream = new RandomAccessFile(file, "rw");
-                return true;
-            } catch (Exception e) {
-                log.info("Skipping file " + file.getName() + " for this iteration due it's not completely written");
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException e) {
-                        log.error("Exception during closing file " + file.getName());
-                    }
+        RandomAccessFile stream = null;
+        try {
+            stream = new RandomAccessFile(file, "rw");
+            return true;
+        } catch (Exception e) {
+            log.info("Skipping file " + file.getName() + " for this iteration due it's not completely written");
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    log.error("Exception during closing file " + file.getName());
                 }
             }
-        } else {
-            return false;
         }
         return false;
     }
