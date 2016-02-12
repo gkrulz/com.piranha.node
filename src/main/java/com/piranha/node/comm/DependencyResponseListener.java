@@ -71,7 +71,7 @@ public class DependencyResponseListener extends Thread{
         }
     }
 
-    public void addDependencies(ArrayList<String> dependencies) {
+    public void addDependencies(HashSet<String> dependencies) {
         this.dependencies.addAll(dependencies);
     }
 
