@@ -4,9 +4,11 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.comm.DependencyRequestListener;
 import com.piranha.node.comm.DependencyResponseListener;
+import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
@@ -75,7 +77,13 @@ public class CompilationListener extends Thread{
 //                            log.debug(dependency.getAsString());
 //                            log.debug(dependencyMap);
 //                            log.debug(dependencyMap.get(dependency.getAsString()) + " and " + localIpAddress);
-                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress))) {
+
+                            String filePath = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
+                            String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
+
+                            File file = new File(filePath + dependencyPath);
+
+                            if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) && !(file.exists())) {
                                 String className  = dependency.getAsString();
                                 locallyUnavailableDependencies.add(className);
                             }
@@ -130,8 +138,12 @@ public class CompilationListener extends Thread{
 
     public void resolve(String ipAddress, String dependency) throws IOException {
         String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+        String filePath = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
+        String dependencyPath = dependency.replace(".", Constants.PATH_SEPARATOR) + ".class";
 
-            if (!(ipAddress.equals(localIpAddress))) {
+        File file = new File(filePath + dependencyPath);
+
+            if (!(ipAddress.equals(localIpAddress)) && !(file.exists())) {
                 log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
                 Socket socket = new Socket(ipAddress, 10500);
 

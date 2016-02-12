@@ -23,7 +23,7 @@ public class DependencyProvider extends Thread {
     private Communication comm;
     private HashMap<String, String> dependencyMap;
     private Socket socket;
-    private ArrayList<String> alreadySentDependencies;
+    private static ArrayList<String> alreadySentDependencies;
 
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
@@ -57,8 +57,10 @@ public class DependencyProvider extends Thread {
             InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
             InetAddress inetAddress = ipAddress.getAddress();
 
-            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") && file.exists()
-                    && alreadySentDependencies.contains(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress())) {
+            log.debug("Already sent dependencies - " + alreadySentDependencies);
+
+            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") &&
+                    !(alreadySentDependencies.contains(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress()))) {
 
 
                 Socket responseSocket = new Socket(inetAddress.getHostAddress(), 10501);

@@ -66,6 +66,7 @@ public class Compiler extends Thread {
                 }
             }
 
+            log.debug(dependencyResponseListener.getFileWriter(dependency.getAsString()));
             //TODO check thread liveliness
             while (dependencyResponseListener.getFileWriter(dependency.getAsString()).isAlive()) {
                 try {

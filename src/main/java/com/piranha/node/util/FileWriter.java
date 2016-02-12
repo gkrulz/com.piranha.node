@@ -42,9 +42,13 @@ public class FileWriter extends Thread{
             IOUtils.copy(bis, fileOutputStream);
             fileOutputStream.close();
 
-            log.debug("Dependency " + testString + " received");
+            log.debug("Dependency " + getTestString() + " received");
         } catch (IOException e) {
             log.error("Error" , e);
         }
+    }
+
+    public String getTestString() {
+        return testString;
     }
 }
