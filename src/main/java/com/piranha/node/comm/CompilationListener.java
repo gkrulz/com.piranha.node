@@ -23,14 +23,18 @@ import java.util.HashSet;
 public class CompilationListener extends Thread {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private Socket socket;
-    private HashMap<String, String> dependencyMap;
+    protected HashMap<String, String> dependencyMap;
     private Communication comm;
     private ArrayList<String> alreadyRequestedDependencies;
+    protected DependencyRequestListener dependencyRequestListener;
+    protected DependencyResponseListener dependencyResponseListener;
 
     public CompilationListener() {
         comm = new Communication();
         dependencyMap = new HashMap<>();
         alreadyRequestedDependencies = new ArrayList<>();
+        dependencyRequestListener = new DependencyRequestListener();
+        dependencyResponseListener = new DependencyResponseListener();
     }
 
     /***
@@ -40,15 +44,11 @@ public class CompilationListener extends Thread {
     public void run() {
 
         Gson gson = new Gson();
-        DependencyRequestListener dependencyRequestListener = null;
 
-        //Initialising and starting the listener for dependency requests from other nodes.
-        dependencyRequestListener = new DependencyRequestListener();
+        //Starting the listener for dependency requests from other nodes.
         dependencyRequestListener.start();
 
-        //Initialising and starting the listener for dependency responses from other nodes.
-        DependencyResponseListener dependencyResponseListener =
-                new DependencyResponseListener();
+        //Starting the listener for dependency responses from other nodes.
         dependencyResponseListener.start();
 
         // Listening to incoming work orders to compile on port 9006.
@@ -76,34 +76,33 @@ public class CompilationListener extends Thread {
                 log.error("Class not found", e);
             }
 
-            CompilationInitializer compilationInitializer = new CompilationInitializer(incomingMessage,
-                    dependencyMap, dependencyResponseListener, dependencyRequestListener, alreadyRequestedDependencies);
+            CompilationInitializer compilationInitializer = new CompilationInitializer(incomingMessage);
             compilationInitializer.start();
         }
     }
 }
 
-class CompilationInitializer extends Thread {
+class CompilationInitializer extends CompilationListener {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private String incomingMessage;
-    private HashMap<String, String> dependencyMap;
+//    private HashMap<String, String> dependencyMap;
     private HashSet<String> locallyUnavailableDependencies;
-    private DependencyResponseListener dependencyResponseListener;
-    private DependencyRequestListener dependencyRequestListener;
+//    private DependencyResponseListener dependencyResponseListener;
+//    private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
     private ArrayList<String> alreadyRequestedDependencies;
 
-    public CompilationInitializer (String incomingMessage, HashMap<String, String> dependencyMap,
+    public CompilationInitializer (String incomingMessage/*, HashMap<String, String> dependencyMap,
                                    DependencyResponseListener dependencyResponseListener,
                                    DependencyRequestListener dependencyRequestListener,
-                                   ArrayList<String> alreadyRequestedDependencies) {
+                                   ArrayList<String> alreadyRequestedDependencies*/) {
         this.incomingMessage = incomingMessage;
-        this.dependencyMap = dependencyMap;
-        this.dependencyResponseListener = dependencyResponseListener;
-        this.dependencyRequestListener = dependencyRequestListener;
+//        this.dependencyMap = dependencyMap;
+//        this.dependencyResponseListener = dependencyResponseListener;
+//        this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
         this.comm = new Communication();
-        this.alreadyRequestedDependencies = alreadyRequestedDependencies;
+//        this.alreadyRequestedDependencies = alreadyRequestedDependencies;
     }
 
     /***
@@ -139,7 +138,7 @@ class CompilationInitializer extends Thread {
 
                     File file = new File(filePath + dependencyPath);
 
-                    log.debug(gson.toJson(dependencyMap) + " - " + dependency.getAsString());
+                    log.debug(alreadyRequestedDependencies + " - " + dependency.getAsString());
 
                     if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
                             !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
