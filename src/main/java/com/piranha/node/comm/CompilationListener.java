@@ -82,7 +82,7 @@ public class CompilationListener extends Thread {
 class CompilationInitializer extends CompilationListener {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private String incomingMessage;
-//    private HashMap<String, String> dependencyMap;
+    //    private HashMap<String, String> dependencyMap;
     private HashSet<String> locallyUnavailableDependencies;
     //    private DependencyResponseListener dependencyResponseListener;
 //    private DependencyRequestListener dependencyRequestListener;
@@ -119,7 +119,8 @@ class CompilationInitializer extends CompilationListener {
             log.debug("dependency map updated - " + dependencyMap);
             dependencyRequestListener.setDependencyMap(dependencyMap);
 
-            Type arrayListType = new TypeToken<ArrayList<JsonObject>>(){}.getType();
+            Type arrayListType = new TypeToken<ArrayList<JsonObject>>() {
+            }.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
             //resolving the dependencies
@@ -198,17 +199,17 @@ class CompilationInitializer extends CompilationListener {
     public void requestDependency(String ipAddress, String dependency) throws IOException {
         String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
 
-        if (!(ipAddress.equals(localIpAddress))) {
-            log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
-            Socket socket = new Socket(ipAddress, 10500);
+        log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
+        Socket socket = new Socket(ipAddress, 10500);
 
-            JsonObject dependencyRequest = new JsonObject();
-            dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
-            dependencyRequest.addProperty("dependency", dependency);
+        JsonObject dependencyRequest = new JsonObject();
+        dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
+        dependencyRequest.addProperty("dependency", dependency);
 
-            comm.writeToSocket(socket, dependencyRequest);
-            socket.close();
-            alreadyRequestedDependencies.add(dependency);
-        }
+        comm.writeToSocket(socket, dependencyRequest);
+        socket.close();
+
+        alreadyRequestedDependencies.add(dependency);
+
     }
 }
