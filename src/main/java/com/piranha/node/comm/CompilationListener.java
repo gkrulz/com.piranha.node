@@ -136,7 +136,7 @@ class CompilationInitializer extends CompilationListener {
                             log.error("Unable to get the local IP", e);
                         }
 
-                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
+//                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                    log.debug(dependency.getAsString() + " - " + dependencyMap);
 
                         while (dependencyMap.get(dependency.getAsString()) == null) {
