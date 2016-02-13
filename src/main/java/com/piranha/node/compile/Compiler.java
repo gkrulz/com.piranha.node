@@ -71,7 +71,7 @@ public class Compiler extends Thread {
                 }
             }
 
-//            log.debug(classJson.getAsJsonObject().get("absoluteClassName").getAsString());
+
 ////            log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
 //            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null);
 //
