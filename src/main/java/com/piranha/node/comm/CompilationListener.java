@@ -25,7 +25,7 @@ public class CompilationListener extends Thread {
     private Socket socket;
     protected HashMap<String, String> dependencyMap;
     private Communication comm;
-    private ArrayList<String> alreadyRequestedDependencies;
+    protected ArrayList<String> alreadyRequestedDependencies;
     protected DependencyRequestListener dependencyRequestListener;
     protected DependencyResponseListener dependencyResponseListener;
 
@@ -90,7 +90,7 @@ class CompilationInitializer extends CompilationListener {
 //    private DependencyResponseListener dependencyResponseListener;
 //    private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
-    private ArrayList<String> alreadyRequestedDependencies;
+//    private ArrayList<String> alreadyRequestedDependencies;
 
     public CompilationInitializer (String incomingMessage/*, HashMap<String, String> dependencyMap,
                                    DependencyResponseListener dependencyResponseListener,
