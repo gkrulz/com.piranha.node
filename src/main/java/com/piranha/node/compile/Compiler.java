@@ -70,10 +70,10 @@ public class Compiler extends Thread {
                 }
             }
 
-            String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
-            String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
-            File file = new File(path + packagePath);
-            
+//            String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
+//            String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
+//            File file = new File(path + packagePath);
+
         }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
@@ -88,7 +88,16 @@ public class Compiler extends Thread {
             this.compile(classJson.get("className").getAsString(), classString.toString());
         } catch (Exception e) {
             log.error("", e);
-            System.exit(0);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e1) {
+                log.error("Unable to sleep thread", e);
+            }
+            try {
+                this.compile(classJson.get("className").getAsString(), classString.toString());
+            } catch (Exception e1) {
+                log.error("omg", e);
+            }
         }
     }
 
