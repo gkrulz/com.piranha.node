@@ -71,24 +71,25 @@ public class Compiler extends Thread {
                 }
             }
 
-            log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
-            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null);
-
-            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null){
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
-            }
-
-            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()).isAlive()){
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
-            }
+//            log.debug(classJson.getAsJsonObject().get("absoluteClassName").getAsString());
+////            log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
+//            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null);
+//
+//            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null){
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    log.error("Error", e);
+//                }
+//            }
+//
+//            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()).isAlive()){
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e) {
+//                    log.error("Error", e);
+//                }
+//            }
 
 //            String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
 //            String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
