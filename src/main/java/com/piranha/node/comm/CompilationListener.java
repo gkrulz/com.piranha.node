@@ -116,8 +116,8 @@ class CompilationInitializer extends CompilationListener {
             }.getType();
             HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
             this.dependencyMap.putAll(tempDependencyMap);
-            log.debug("dependency map updated - " + this.dependencyMap);
-            dependencyRequestListener.setDependencyMap(this.dependencyMap);
+            log.debug("dependency map updated - " + dependencyMap);
+            dependencyRequestListener.setDependencyMap(dependencyMap);
 
             Type arrayListType = new TypeToken<ArrayList<JsonObject>>(){}.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
@@ -135,11 +135,15 @@ class CompilationInitializer extends CompilationListener {
                         log.error("Unable to get the local IP", e);
                     }
 
-                    log.debug(dependency.getAsString() + " - " + this.alreadyRequestedDependencies);
-                    log.debug(dependency.getAsString() + " - " + this.dependencyMap);
+                    log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
+                    log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                    if (!(this.dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
-                            !(this.alreadyRequestedDependencies.contains(dependency.getAsString()))) {
+                    while (dependencyMap.get(dependency.getAsString()) == null) {
+
+                    }
+
+                    if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
+                            !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
 
                         String className = dependency.getAsString();
                         locallyUnavailableDependencies.add(className);
