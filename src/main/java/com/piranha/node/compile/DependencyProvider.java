@@ -60,7 +60,7 @@ public class DependencyProvider extends DependencyRequestListener {
 
         File file = new File(path + packagePath);
 
-        log.debug(compilers.get(requestJson.get("dependency").getAsString()));
+        log.debug(compilers.get(requestJson.get("dependency").getAsString()) == null);
 
         while (compilers.get(requestJson.get("dependency").getAsString()) == null) {
             try {

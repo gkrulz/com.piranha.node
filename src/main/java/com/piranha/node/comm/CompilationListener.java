@@ -82,24 +82,13 @@ public class CompilationListener extends Thread {
 class CompilationInitializer extends CompilationListener {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private String incomingMessage;
-    //    private HashMap<String, String> dependencyMap;
     private HashSet<String> locallyUnavailableDependencies;
-    //    private DependencyResponseListener dependencyResponseListener;
-//    private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
-//    private ArrayList<String> alreadyRequestedDependencies;
 
-    public CompilationInitializer(String incomingMessage/*, HashMap<String, String> dependencyMap,
-                                   DependencyResponseListener dependencyResponseListener,
-                                   DependencyRequestListener dependencyRequestListener,
-                                   ArrayList<String> alreadyRequestedDependencies*/) {
+    public CompilationInitializer(String incomingMessage) {
         this.incomingMessage = incomingMessage;
-//        this.dependencyMap = new HashMap<>();
-//        this.dependencyResponseListener = dependencyResponseListener;
-//        this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
         this.comm = new Communication();
-//        this.alreadyRequestedDependencies = alreadyRequestedDependencies;
     }
 
     /***

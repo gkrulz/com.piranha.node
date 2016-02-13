@@ -47,6 +47,8 @@ public class DependencyResponseListener extends Thread{
 
                 JsonObject responseJson = parser.parse(comm.readFromSocket(socket)).getAsJsonObject();
 
+                log.debug(responseJson.get("className").getAsString());
+
                 String testString = responseJson.get("className").getAsString();
                 testString = testString.replace("/", ".");
                 testString = testString.replace("\\", ".");
@@ -54,7 +56,7 @@ public class DependencyResponseListener extends Thread{
                 testString = testString.replace(".class", "");
 //                log.debug(testString);
 
-                if (dependencies.contains(testString) && fileWriters.get(testString) == null) {
+                if (fileWriters.get(testString) == null) {
                     FileWriter fileWriter = new FileWriter(responseJson, testString);
                     fileWriters.put(testString, fileWriter);
                     fileWriter.start();

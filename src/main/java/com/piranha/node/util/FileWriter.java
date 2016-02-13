@@ -34,6 +34,8 @@ public class FileWriter extends Thread{
             fileName = fileName.replace("/", Constants.PATH_SEPARATOR);
             fileName = fileName.replace("\\", Constants.PATH_SEPARATOR);
 
+            log.debug(Constants.DESTINATION_PATH + fileName);
+
             File file = new File(Constants.DESTINATION_PATH + fileName);
             file.getParentFile().mkdirs();
             FileOutputStream fileOutputStream = new FileOutputStream(file);
