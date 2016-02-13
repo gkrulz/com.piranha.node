@@ -30,6 +30,7 @@ public class DependencyProvider extends Thread {
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
         this.socket = socket;
+        this.compilers = new HashMap<>();
     }
 
     /***
