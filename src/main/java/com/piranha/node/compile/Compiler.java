@@ -73,21 +73,7 @@ public class Compiler extends Thread {
             String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
             String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
             File file = new File(path + packagePath);
-
-            log.debug(path + packagePath);
-            try {
-                log.debug(isFileInUse(file));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                while (isFileInUse(file)){
-
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            
         }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
@@ -141,23 +127,5 @@ public class Compiler extends Thread {
             throw new Exception("Compilation failed :" + output);
         }
 
-    }
-
-    public boolean isFileInUse(File file) throws IOException {
-        boolean isInUse = true;
-
-        FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-
-        FileLock lock = channel.lock();
-        try {
-            lock = channel.tryLock();
-            isInUse = false;
-        } catch (OverlappingFileLockException e) {
-            isInUse = true;
-        } finally {
-            lock.release();
-        }
-
-        return isInUse;
     }
 }
