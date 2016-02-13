@@ -57,6 +57,14 @@ public class DependencyProvider extends Thread {
 
         File file = new File(path + packagePath);
 
+        while (compilers.get(requestJson.get("dependency").getAsString()) == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                log.error("Error", e);
+            }
+        }
+
         //checking whether the requested dependency is done compiling.
         Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
         while (dependencyCompiler.isAlive()) {
