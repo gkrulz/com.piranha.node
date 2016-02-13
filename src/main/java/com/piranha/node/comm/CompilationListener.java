@@ -3,11 +3,9 @@ package com.piranha.node.comm;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.compile.Compiler;
-import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.ServerSocket;
@@ -16,7 +14,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -98,7 +95,7 @@ class CompilationInitializer extends CompilationListener {
                                    DependencyRequestListener dependencyRequestListener,
                                    ArrayList<String> alreadyRequestedDependencies*/) {
         this.incomingMessage = incomingMessage;
-//        this.dependencyMap = dependencyMap;
+//        this.dependencyMap = new HashMap<>();
 //        this.dependencyResponseListener = dependencyResponseListener;
 //        this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
@@ -130,20 +127,11 @@ class CompilationInitializer extends CompilationListener {
                         log.error("Unable to get the local IP", e);
                     }
 
-//                    log.debug(dependency.getAsString());
-//                    log.debug(dependencyMap);
-//                    log.debug(dependencyMap.get(dependency.getAsString()) + " and " + localIpAddress);
-
-                    String filePath = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
-                    String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
-
-                    File file = new File(filePath + dependencyPath);
-
-                    log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
+                    log.debug(dependency.getAsString() + " - " + this.alreadyRequestedDependencies);
                     log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                    if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
-                            !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
+                    if (!(this.dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
+                            !(this.alreadyRequestedDependencies.contains(dependency.getAsString()))) {
 
                         String className = dependency.getAsString();
                         locallyUnavailableDependencies.add(className);
@@ -176,7 +164,7 @@ class CompilationInitializer extends CompilationListener {
                     log.error("Unable to initialize the compiler", e);
                 }
                 compilers.put(classJson.getAsJsonObject().get("absoluteClassName").getAsString(), compiler);
-//                compiler.start();
+                compiler.start();
             }
 
             //Add all compilation threads to dependency request listener
@@ -187,19 +175,8 @@ class CompilationInitializer extends CompilationListener {
             if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
                 Type type = new TypeToken<HashMap<String, String>>() {}.getType();
                 HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
-                log.debug(tempDependencyMap);
                 dependencyMap.putAll(tempDependencyMap);
                 dependencyRequestListener.setDependencyMap(this.dependencyMap);
-
-                Iterator iterator = compilers.entrySet().iterator();
-
-                while (iterator.hasNext()) {
-                    HashMap.Entry pair = (HashMap.Entry)iterator.next();
-
-                    Thread compiler = (Thread) pair.getValue();
-                    compiler.start();
-                    iterator.remove(); // avoids a ConcurrentModificationException
-                }
             }
         }
 
