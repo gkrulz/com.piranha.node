@@ -2,6 +2,7 @@ package com.piranha.node.compile;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.piranha.node.comm.DependencyRequestListener;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import org.apache.commons.codec.binary.Base64;
@@ -21,17 +22,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by Padmaka on 2/6/16.
  */
-public class DependencyProvider extends Thread {
+public class DependencyProvider extends DependencyRequestListener {
     private static final Logger log = Logger.getLogger(DependencyProvider.class);
     private Communication comm;
     private ConcurrentHashMap<String, String> dependencyMap;
     private Socket socket;
-    private static HashMap<String, Compiler> compilers;
+//    private static HashMap<String, Compiler> compilers;
 
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
         this.socket = socket;
-        this.compilers = new HashMap<>();
+//        this.compilers = new HashMap<>();
     }
 
     /***

@@ -19,7 +19,7 @@ public class DependencyRequestListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyRequestListener.class);
     private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
-    private HashMap<String, Compiler> compilers;
+    protected static HashMap<String, Compiler> compilers;
 
     public DependencyRequestListener() {
         this.comm = new Communication();
@@ -48,7 +48,6 @@ public class DependencyRequestListener extends Thread{
 
                 DependencyProvider dependencyProvider = new DependencyProvider(socket);
                 dependencyProvider.setDependencyMap(this.dependencyMap);
-                dependencyProvider.addCompilers(compilers);
                 dependencyProvider.start();
             } catch (IOException e) {
                 log.error("Error", e);
