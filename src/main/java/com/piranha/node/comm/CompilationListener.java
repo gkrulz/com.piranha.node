@@ -121,7 +121,7 @@ class CompilationInitializer extends CompilationListener {
             dependencyRequestListener.setDependencyMap(this.dependencyMap);
 
             Type arrayListType = new TypeToken<ArrayList<JsonObject>>(){}.getType();
-            ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), type);
+            ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
             //resolving the dependencies
             for (JsonElement classJson : classes) {
