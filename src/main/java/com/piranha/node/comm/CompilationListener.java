@@ -122,7 +122,7 @@ class CompilationInitializer extends CompilationListener {
             }.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
-            synchronized (this) {
+            synchronized (CompilationInitializer.class) {
                 //resolving the dependencies
                 for (JsonElement classJson : classes) {
                     JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
