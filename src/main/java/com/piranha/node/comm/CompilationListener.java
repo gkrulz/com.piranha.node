@@ -25,10 +25,12 @@ public class CompilationListener extends Thread {
     private Socket socket;
     private HashMap<String, String> dependencyMap;
     private Communication comm;
+    private ArrayList<String> alreadyRequestedDependencies;
 
     public CompilationListener() {
         comm = new Communication();
         dependencyMap = new HashMap<>();
+        alreadyRequestedDependencies = new ArrayList<>();
     }
 
     /***
@@ -75,7 +77,7 @@ public class CompilationListener extends Thread {
             }
 
             CompilationInitializer compilationInitializer = new CompilationInitializer(incomingMessage,
-                    dependencyMap, dependencyResponseListener, dependencyRequestListener);
+                    dependencyMap, dependencyResponseListener, dependencyRequestListener, alreadyRequestedDependencies);
             compilationInitializer.start();
         }
     }
@@ -89,18 +91,19 @@ class CompilationInitializer extends Thread {
     private DependencyResponseListener dependencyResponseListener;
     private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
-    ArrayList<String> alreadyRequestedDependencies;
+    private ArrayList<String> alreadyRequestedDependencies;
 
     public CompilationInitializer (String incomingMessage, HashMap<String, String> dependencyMap,
                                    DependencyResponseListener dependencyResponseListener,
-                                   DependencyRequestListener dependencyRequestListener) {
+                                   DependencyRequestListener dependencyRequestListener,
+                                   ArrayList<String> alreadyRequestedDependencies) {
         this.incomingMessage = incomingMessage;
         this.dependencyMap = dependencyMap;
         this.dependencyResponseListener = dependencyResponseListener;
         this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
         this.comm = new Communication();
-        alreadyRequestedDependencies = new ArrayList<>();
+        this.alreadyRequestedDependencies = alreadyRequestedDependencies;
     }
 
     /***
