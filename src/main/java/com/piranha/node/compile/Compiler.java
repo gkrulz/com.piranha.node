@@ -72,7 +72,7 @@ public class Compiler extends Thread {
             }
 
             log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
-            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency) == null);
+            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null);
 
             while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null){
                 try {
@@ -82,7 +82,7 @@ public class Compiler extends Thread {
                 }
             }
 
-            while (DependencyRequestListener.getDependencyProviders().get(dependency).isAlive()){
+            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()).isAlive()){
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
