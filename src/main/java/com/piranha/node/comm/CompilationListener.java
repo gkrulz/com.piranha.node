@@ -77,8 +77,6 @@ public class CompilationListener extends Thread {
             CompilationInitializer compilationInitializer = new CompilationInitializer(incomingMessage,
                     dependencyMap, dependencyResponseListener, dependencyRequestListener);
             compilationInitializer.start();
-
-            log.debug(gson.toJson(dependencyMap));
         }
     }
 }
@@ -187,6 +185,8 @@ class CompilationInitializer extends Thread {
                 dependencyRequestListener.setDependencyMap(this.dependencyMap);
             }
         }
+
+        log.debug(gson.toJson(dependencyMap));
     }
 
     /***
