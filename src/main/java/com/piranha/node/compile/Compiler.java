@@ -89,7 +89,7 @@ public class Compiler extends Thread {
         } catch (Exception e) {
             log.error("", e);
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e1) {
                 log.error("Unable to sleep thread", e);
             }
