@@ -43,12 +43,6 @@ public class Compiler extends Thread {
         JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
         for (JsonElement dependency : dependencies) {
-            String currentDir = System.getProperty("user.dir") + Constants.PATH_SEPARATOR + "destination" + Constants.PATH_SEPARATOR;
-            String dependencyPath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
-            File file = new File(currentDir + dependencyPath);
-
-            log.debug(currentDir + dependencyPath);
-
             HashMap<String, Thread> dependencyThreads = new HashMap<>();
 
             dependencyThreads.putAll(fileWriters);

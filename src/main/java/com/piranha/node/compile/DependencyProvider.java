@@ -49,6 +49,7 @@ public class DependencyProvider extends Thread {
         } catch (ClassNotFoundException e) {
             log.error("Class not found", e);
         }
+
         log.debug(requestString);
         JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
@@ -65,6 +66,8 @@ public class DependencyProvider extends Thread {
                 log.error("Error", e);
             }
         }
+
+        log.debug(compilers.get(requestJson.get("dependency").getAsString()));
 
         //checking whether the requested dependency is done compiling.
         Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
