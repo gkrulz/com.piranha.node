@@ -114,6 +114,7 @@ public class DependencyProvider extends DependencyRequestListener {
         JsonParser parser = new JsonParser();
 
         byte[] bytes = IOUtils.toByteArray(fileInputStream);
+        fileInputStream.close();
         String className = classFile.getAbsolutePath();
         className = className.replace(Constants.DESTINATION_PATH, "");
 

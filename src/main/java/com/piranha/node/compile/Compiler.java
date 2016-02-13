@@ -87,17 +87,8 @@ public class Compiler extends Thread {
         try {
             this.compile(classJson.get("className").getAsString(), classString.toString());
         } catch (Exception e) {
-            log.error("", e);
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e1) {
-                log.error("Unable to sleep thread", e);
-            }
-            try {
-                this.compile(classJson.get("className").getAsString(), classString.toString());
-            } catch (Exception e1) {
-                log.error("omg", e);
-            }
+            log.error("Unable to compile the file", e);
+            System.exit(0);
         }
     }
 
