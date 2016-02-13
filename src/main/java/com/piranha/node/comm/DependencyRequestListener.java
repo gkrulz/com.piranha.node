@@ -21,12 +21,11 @@ public class DependencyRequestListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyRequestListener.class);
     private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
-    protected static ConcurrentHashMap<String, Compiler> compilers;
+    protected static ConcurrentHashMap<String, Compiler> compilers = new ConcurrentHashMap<>();
     protected static ConcurrentHashMap<String, DependencyProvider> dependencyProviders = new ConcurrentHashMap<>();
 
     public DependencyRequestListener() {
         this.comm = new Communication();
-        this.compilers = new ConcurrentHashMap<>();
     }
 
     public void setDependencyMap(ConcurrentHashMap<String, String> dependencyMap) {
