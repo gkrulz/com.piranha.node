@@ -155,7 +155,7 @@ public class Compiler extends Thread {
             lock.release(); //close the file.
             channel.close();
         } catch (Exception e) {
-            log.error("Unable to read the file", e);
+            isInUse = true;
         }
 
         return isInUse;
