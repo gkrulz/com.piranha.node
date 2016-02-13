@@ -116,7 +116,6 @@ class CompilationInitializer extends CompilationListener {
             }.getType();
             HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
             this.dependencyMap.putAll(tempDependencyMap);
-            log.debug("dependency map updated - " + dependencyMap);
             dependencyRequestListener.setDependencyMap(dependencyMap);
 
             Type arrayListType = new TypeToken<ArrayList<JsonObject>>() {
@@ -137,7 +136,7 @@ class CompilationInitializer extends CompilationListener {
                     }
 
                     log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
-                    log.debug(dependency.getAsString() + " - " + dependencyMap);
+//                    log.debug(dependency.getAsString() + " - " + dependencyMap);
 
                     while (dependencyMap.get(dependency.getAsString()) == null) {
 
@@ -153,7 +152,7 @@ class CompilationInitializer extends CompilationListener {
                 }
             }
 
-            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
+//            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
 
             //add dependencies in each round
             dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
@@ -162,6 +161,7 @@ class CompilationInitializer extends CompilationListener {
                 String ipAddress = dependencyMap.get(dependency);
 
                 try {
+                    alreadyRequestedDependencies.add(dependency);
                     this.requestDependency(ipAddress, dependency);
                 } catch (IOException e) {
                     log.error("Unable to request dependency", e);
@@ -208,8 +208,5 @@ class CompilationInitializer extends CompilationListener {
 
         comm.writeToSocket(socket, dependencyRequest);
         socket.close();
-
-        alreadyRequestedDependencies.add(dependency);
-
     }
 }
