@@ -122,50 +122,53 @@ class CompilationInitializer extends CompilationListener {
             }.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
-            //resolving the dependencies
-            for (JsonElement classJson : classes) {
-                JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
+            synchronized (this) {
+                //resolving the dependencies
+                for (JsonElement classJson : classes) {
+                    JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
-                for (JsonElement dependency : dependencies) {
+                    for (JsonElement dependency : dependencies) {
 
-                    String localIpAddress = null;
-                    try {
-                        localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
-                    } catch (SocketException e) {
-                        log.error("Unable to get the local IP", e);
-                    }
+                        String localIpAddress = null;
+                        try {
+                            localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+                        } catch (SocketException e) {
+                            log.error("Unable to get the local IP", e);
+                        }
 
-                    log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
+                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                    log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                    while (dependencyMap.get(dependency.getAsString()) == null) {
+                        while (dependencyMap.get(dependency.getAsString()) == null) {
 
-                    }
+                        }
 
-                    if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
-                            !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
+                        if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
+                                !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
 
-                        String className = dependency.getAsString();
-                        locallyUnavailableDependencies.add(className);
+                            String className = dependency.getAsString();
+                            locallyUnavailableDependencies.add(className);
 
+                        }
                     }
                 }
-            }
 
 //            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
 
-            //add dependencies in each round
-            dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
+                //add dependencies in each round
+                dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
 
-            for (String dependency : locallyUnavailableDependencies) {
-                String ipAddress = dependencyMap.get(dependency);
+                for (String dependency : locallyUnavailableDependencies) {
+                    String ipAddress = dependencyMap.get(dependency);
 
-                try {
-                    alreadyRequestedDependencies.add(dependency);
-                    this.requestDependency(ipAddress, dependency);
-                } catch (IOException e) {
-                    log.error("Unable to request dependency", e);
+                    try {
+                        alreadyRequestedDependencies.add(dependency);
+                        this.requestDependency(ipAddress, dependency);
+                    } catch (IOException e) {
+                        log.error("Unable to request dependency", e);
+                    }
                 }
+
             }
 
 
