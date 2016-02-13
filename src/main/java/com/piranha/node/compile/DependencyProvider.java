@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -23,7 +24,7 @@ import java.util.Hashtable;
 public class DependencyProvider extends Thread {
     private static final Logger log = Logger.getLogger(DependencyProvider.class);
     private Communication comm;
-    private HashMap<String, String> dependencyMap;
+    private ConcurrentHashMap<String, String> dependencyMap;
     private Socket socket;
     private HashMap<String, Compiler> compilers;
 
@@ -119,7 +120,7 @@ public class DependencyProvider extends Thread {
         comm.writeToSocket(socket, requestJson);
     }
 
-    public void setDependencyMap(HashMap<String, String> dependencyMap) {
+    public void setDependencyMap(ConcurrentHashMap<String, String> dependencyMap) {
         this.dependencyMap = dependencyMap;
     }
 

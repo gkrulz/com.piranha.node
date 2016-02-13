@@ -10,13 +10,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Padmaka on 2/7/16.
  */
 public class DependencyRequestListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyRequestListener.class);
-    private HashMap<String, String> dependencyMap;
+    private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
     private HashMap<String, Compiler> compilers;
 
@@ -25,7 +26,7 @@ public class DependencyRequestListener extends Thread{
         this.compilers = new HashMap<>();
     }
 
-    public void setDependencyMap(HashMap<String, String> dependencyMap) {
+    public void setDependencyMap(ConcurrentHashMap<String, String> dependencyMap) {
         this.dependencyMap = dependencyMap;
     }
 

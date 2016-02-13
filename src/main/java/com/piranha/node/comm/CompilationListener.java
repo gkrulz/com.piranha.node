@@ -14,6 +14,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -21,7 +22,7 @@ import java.util.HashSet;
 public class CompilationListener extends Thread {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private Socket socket;
-    protected static HashMap<String, String> dependencyMap;
+    protected static ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
     protected ArrayList<String> alreadyRequestedDependencies;
     protected DependencyRequestListener dependencyRequestListener;
@@ -29,7 +30,7 @@ public class CompilationListener extends Thread {
 
     public CompilationListener() {
         comm = new Communication();
-        dependencyMap = new HashMap<>();
+        dependencyMap = new ConcurrentHashMap<>();
         alreadyRequestedDependencies = new ArrayList<>();
         dependencyRequestListener = new DependencyRequestListener();
         dependencyResponseListener = new DependencyResponseListener();
@@ -116,8 +117,8 @@ class CompilationInitializer extends CompilationListener {
             Type type = new TypeToken<HashMap<String, String>>() {
             }.getType();
             HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
-            dependencyMap.putAll(tempDependencyMap);
-            log.debug("dependency map updated - " + dependencyMap);
+            this.dependencyMap.putAll(tempDependencyMap);
+            log.debug("dependency map updated - " + this.dependencyMap);
             dependencyRequestListener.setDependencyMap(this.dependencyMap);
 
             Type arrayListType = new TypeToken<ArrayList<JsonObject>>(){}.getType();
@@ -137,9 +138,9 @@ class CompilationInitializer extends CompilationListener {
                     }
 
                     log.debug(dependency.getAsString() + " - " + this.alreadyRequestedDependencies);
-                    log.debug(dependency.getAsString() + " - " + this.getDependencyMap());
+                    log.debug(dependency.getAsString() + " - " + this.dependencyMap);
 
-                    if (!(this.getDependencyMap().get(dependency.getAsString()).equals(localIpAddress)) &&
+                    if (!(this.dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
                             !(this.alreadyRequestedDependencies.contains(dependency.getAsString()))) {
 
                         String className = dependency.getAsString();
@@ -207,9 +208,5 @@ class CompilationInitializer extends CompilationListener {
             socket.close();
             alreadyRequestedDependencies.add(dependency);
         }
-    }
-
-    public synchronized HashMap<String, String> getDependencyMap() {
-        return dependencyMap;
     }
 }
