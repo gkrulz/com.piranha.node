@@ -1,5 +1,7 @@
 package com.piranha.node.comm;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.piranha.node.compile.Compiler;
 import com.piranha.node.compile.DependencyProvider;
 import com.piranha.node.util.Communication;
@@ -20,6 +22,7 @@ public class DependencyRequestListener extends Thread{
     private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
     protected static ConcurrentHashMap<String, Compiler> compilers;
+    protected static ConcurrentHashMap<String, DependencyProvider> dependencyProviders = new ConcurrentHashMap<>();
 
     public DependencyRequestListener() {
         this.comm = new Communication();
@@ -35,6 +38,7 @@ public class DependencyRequestListener extends Thread{
      */
     public void run() {
         ServerSocket serverSocket = null;
+        JsonParser parser = new JsonParser();
 
         try {
             serverSocket = new ServerSocket(10500);
@@ -46,8 +50,22 @@ public class DependencyRequestListener extends Thread{
             try {
                 Socket socket = serverSocket.accept();
 
-                DependencyProvider dependencyProvider = new DependencyProvider(socket);
+                String requestString = null;
+                try {
+                    requestString = comm.readFromSocket(socket);
+                } catch (IOException e) {
+                    log.error("Unable to read from socket", e);
+                } catch (ClassNotFoundException e) {
+                    log.error("Class not found", e);
+                }
+
+                JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
+
+                String dependency = requestJson.get("dependency").getAsString();
+
+                DependencyProvider dependencyProvider = new DependencyProvider(requestJson, socket);
                 dependencyProvider.setDependencyMap(this.dependencyMap);
+                dependencyProviders.put(dependency, dependencyProvider);
                 dependencyProvider.start();
             } catch (IOException e) {
                 log.error("Error", e);
@@ -61,5 +79,9 @@ public class DependencyRequestListener extends Thread{
      */
     public void setCompilers(ConcurrentHashMap<String, Compiler> compilers) {
         this.compilers.putAll(compilers);
+    }
+
+    public static ConcurrentHashMap<String, DependencyProvider> getDependencyProviders() {
+        return dependencyProviders;
     }
 }

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.piranha.node.comm.CompilationInitializer;
 import com.piranha.node.comm.CompilationListener;
+import com.piranha.node.comm.DependencyRequestListener;
 import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.FileWriter;
@@ -63,6 +64,22 @@ public class Compiler extends Thread {
 
             //Checking thread liveliness
             while (dependencyThreads.get(dependency.getAsString()).isAlive()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
+            }
+
+            while (DependencyRequestListener.getDependencyProviders().get(dependency) == null){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
+            }
+
+            while (DependencyRequestListener.getDependencyProviders().get(dependency).isAlive()){
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {

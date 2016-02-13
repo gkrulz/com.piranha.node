@@ -26,11 +26,13 @@ public class DependencyProvider extends DependencyRequestListener {
     private static final Logger log = Logger.getLogger(DependencyProvider.class);
     private Communication comm;
     private ConcurrentHashMap<String, String> dependencyMap;
+    private JsonObject requestJson;
     private Socket socket;
 //    private static HashMap<String, Compiler> compilers;
 
-    public DependencyProvider(Socket socket) throws IOException {
+    public DependencyProvider(JsonObject requestJson, Socket socket) throws IOException {
         this.comm = new Communication();
+        this.requestJson = requestJson;
         this.socket = socket;
 //        this.compilers = new HashMap<>();
     }
@@ -40,20 +42,6 @@ public class DependencyProvider extends DependencyRequestListener {
      */
     @Override
     public void run() {
-        JsonParser parser = new JsonParser();
-
-        String requestString = null;
-        try {
-            requestString = comm.readFromSocket(socket);
-        } catch (IOException e) {
-            log.error("Unable to read from socket", e);
-        } catch (ClassNotFoundException e) {
-            log.error("Class not found", e);
-        }
-
-        log.debug(requestString);
-        JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
-
         String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
         String packagePath = requestJson.get("dependency").getAsString();
         packagePath = packagePath.replace(".", Constants.PATH_SEPARATOR) + ".class";
