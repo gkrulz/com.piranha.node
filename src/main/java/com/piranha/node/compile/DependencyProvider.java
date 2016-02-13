@@ -60,6 +60,8 @@ public class DependencyProvider extends DependencyRequestListener {
 
         File file = new File(path + packagePath);
 
+        log.debug(compilers.get(requestJson.get("dependency").getAsString()));
+
         while (compilers.get(requestJson.get("dependency").getAsString()) == null) {
             try {
                 Thread.sleep(100);
@@ -67,8 +69,6 @@ public class DependencyProvider extends DependencyRequestListener {
                 log.error("Error", e);
             }
         }
-
-        log.debug(compilers.get(requestJson.get("dependency").getAsString()));
 
         //checking whether the requested dependency is done compiling.
         Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());

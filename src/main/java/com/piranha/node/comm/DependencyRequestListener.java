@@ -19,11 +19,11 @@ public class DependencyRequestListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyRequestListener.class);
     private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
-    protected static HashMap<String, Compiler> compilers;
+    protected static ConcurrentHashMap<String, Compiler> compilers;
 
     public DependencyRequestListener() {
         this.comm = new Communication();
-        this.compilers = new HashMap<>();
+        this.compilers = new ConcurrentHashMap<>();
     }
 
     public void setDependencyMap(ConcurrentHashMap<String, String> dependencyMap) {
