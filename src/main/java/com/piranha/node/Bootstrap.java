@@ -17,7 +17,7 @@ public class Bootstrap {
 
     /***
      * Main Method
-     * @param args
+     * @param args no arguments
      */
     public static void main(String[] args) {
         Communication comm = new Communication();

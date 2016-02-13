@@ -14,6 +14,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -23,58 +25,76 @@ public class DependencyProvider extends Thread {
     private Communication comm;
     private HashMap<String, String> dependencyMap;
     private Socket socket;
-    private static ArrayList<String> alreadySentDependencies;
+    private HashMap<String, Compiler> compilers;
 
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
         this.socket = socket;
-        this.alreadySentDependencies = new ArrayList<>();
     }
 
+    /***
+     * The overridden run method of Thread class
+     */
     @Override
     public void run() {
         JsonParser parser = new JsonParser();
 
+        String requestString = null;
         try {
-            String requestString = comm.readFromSocket(socket);
-            log.debug(requestString);
-            JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
+            requestString = comm.readFromSocket(socket);
+        } catch (IOException e) {
+            log.error("Unable to read from socket", e);
+        } catch (ClassNotFoundException e) {
+            log.error("Class not found", e);
+        }
+        log.debug(requestString);
+        JsonObject requestJson = parser.parse(requestString).getAsJsonObject();
 
-            String path = Constants.DESTINATION_PATH + "/";
-            String packagePath = requestJson.get("dependency").getAsString();
-            packagePath = packagePath.replace(".", "/") + ".class";
+        String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
+        String packagePath = requestJson.get("dependency").getAsString();
+        packagePath = packagePath.replace(".", Constants.PATH_SEPARATOR) + ".class";
 
-            File file = new File(path + packagePath);
+        File file = new File(path + packagePath);
 
-            while (!file.exists()){
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
+        //checking whether the requested dependency is done compiling.
+        Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
+        while (dependencyCompiler.isAlive()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                log.error("Error", e);
             }
+        }
 
-            InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-            InetAddress inetAddress = ipAddress.getAddress();
+        //Getting the request origin ip to send back the response
+        InetSocketAddress ipAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+        InetAddress inetAddress = ipAddress.getAddress();
 
-            log.debug("Already sent dependencies - " + alreadySentDependencies);
+        if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST")) {
 
-            if (requestJson.get("op").getAsString().equals("DEPENDENCY_REQUEST") &&
-                    !(alreadySentDependencies.contains(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress()))) {
-
-
+            try {
                 Socket responseSocket = new Socket(inetAddress.getHostAddress(), 10501);
                 this.sendDependency(file, responseSocket);
-                alreadySentDependencies.add(requestJson.get("dependency").getAsString() + inetAddress.getHostAddress());
                 log.debug("successfully sent dependency: " + file.getName());
                 responseSocket.close();
+            } catch (IOException e) {
+                log.error("Unable to send the dependency file", e);
             }
+        }
+
+        try {
             socket.close();
-        } catch (IOException | ClassNotFoundException e) {
-            log.error("Error", e);
+        } catch (IOException e) {
+            log.error("Unable to close the socket", e);
         }
     }
 
+    /***
+     * The method to send the dependency file.
+     * @param classFile File object
+     * @param socket socket that the file needs to be written in to
+     * @throws IOException
+     */
     public void sendDependency(File classFile, Socket socket) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(classFile);
         JsonParser parser = new JsonParser();
@@ -92,5 +112,9 @@ public class DependencyProvider extends Thread {
 
     public void setDependencyMap(HashMap<String, String> dependencyMap) {
         this.dependencyMap = dependencyMap;
+    }
+
+    public void addCompilers(HashMap<String, Compiler> compilers) {
+        this.compilers.putAll(compilers);
     }
 }

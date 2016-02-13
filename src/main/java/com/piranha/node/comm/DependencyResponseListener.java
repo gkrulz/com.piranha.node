@@ -2,20 +2,13 @@ package com.piranha.node.comm;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
 import com.piranha.node.util.FileWriter;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -25,9 +18,8 @@ import java.util.HashSet;
 public class DependencyResponseListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyResponseListener.class);
     private Communication comm;
-    private int noOfIterations;
     private HashSet<String> dependencies;
-    private HashMap<String, Thread> fileWriters;
+    private HashMap<String, FileWriter> fileWriters;
 
     public DependencyResponseListener() {
         comm = new Communication();
@@ -35,6 +27,9 @@ public class DependencyResponseListener extends Thread{
         this.fileWriters = new HashMap<>();
     }
 
+    /***
+     * The overridden run method of Thread class
+     */
     @Override
     public void run() {
         ServerSocket serverSocket = null;
@@ -71,11 +66,19 @@ public class DependencyResponseListener extends Thread{
         }
     }
 
+    /***
+     * The method to add dependencies
+     * @param dependencies list of dependencies without duplicates.
+     */
     public void addDependencies(HashSet<String> dependencies) {
         this.dependencies.addAll(dependencies);
     }
 
-    public Thread getFileWriter(String className) {
-        return fileWriters.get(className);
+    /***
+     * The method to get a hashmap of file writer threads
+     * @return hashmap of file writer threads
+     */
+    public HashMap<String, FileWriter> getFileWriters() {
+        return fileWriters;
     }
 }

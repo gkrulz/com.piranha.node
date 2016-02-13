@@ -3,9 +3,8 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
-import com.piranha.node.util.Communication;
+import com.piranha.node.util.FileWriter;
 import org.apache.log4j.Logger;
 
 import javax.tools.JavaCompiler;
@@ -13,7 +12,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.net.*;
 import java.util.*;
@@ -25,18 +23,20 @@ public class Compiler extends Thread {
     private static final Logger log = Logger.getLogger(Compiler.class);
     private Properties properties;
     private JsonObject classJson;
-    private HashMap<String, String> dependencyMap;
-    private DependencyResponseListener dependencyResponseListener;
+    private HashMap<String, FileWriter> fileWriters;
+    private HashMap<String, Compiler> compilers;
 
-    public Compiler(JsonObject classJson, HashMap<String, String> dependencyMap,
-                    DependencyResponseListener dependencyResponseListener) throws IOException {
+    public Compiler(JsonObject classJson, HashMap<String, FileWriter> fileWriters, HashMap<String, Compiler> compilers) throws IOException {
         properties = new Properties();
         properties.load(Compiler.class.getClassLoader().getResourceAsStream("config.properties"));
         this.classJson = classJson;
-        this.dependencyMap = dependencyMap;
-        this.dependencyResponseListener = dependencyResponseListener;
+        this.fileWriters = fileWriters;
+        this.compilers = compilers;
     }
 
+    /***
+     * Overridden run method of Thread class
+     */
     @Override
     public void run() {
         //resolving the dependencies
@@ -49,26 +49,28 @@ public class Compiler extends Thread {
 
             log.debug(currentDir + dependencyPath);
 
-//            while(!file.exists()) {
-//                log.debug("waiting for dependency - " + dependency);
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
-//            }
+            HashMap<String, Thread> dependencyThreads = new HashMap<>();
 
-            while (dependencyResponseListener.getFileWriter(dependency.getAsString()) == null) {
+            dependencyThreads.putAll(fileWriters);
+            dependencyThreads.putAll(compilers);
+
+            //Waiting for dependencies to be compiled or arrive
+            while (dependencyThreads.get(dependency.getAsString()) == null) {
+
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     log.error("Error", e);
                 }
+
+                dependencyThreads.putAll(fileWriters);
+                dependencyThreads.putAll(compilers);
             }
 
-            log.debug(dependencyResponseListener.getFileWriter(dependency.getAsString()));
-            //TODO check thread liveliness
-            while (dependencyResponseListener.getFileWriter(dependency.getAsString()).isAlive()) {
+            log.debug(dependencyThreads.get(dependency.getAsString()));
+
+            //Checking thread liveliness
+            while (dependencyThreads.get(dependency.getAsString()).isAlive()) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -76,12 +78,6 @@ public class Compiler extends Thread {
                 }
             }
         }
-
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            log.error("Error", e);
-//        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
@@ -99,6 +95,12 @@ public class Compiler extends Thread {
         }
     }
 
+    /***
+     * The method to compile the given class
+     * @param className name of the class to compile
+     * @param classString Class code as a string
+     * @throws Exception
+     */
     public void compile(String className, String classString) throws Exception {
 
         JavaCompiler jc = ToolProvider.getSystemJavaCompiler();
@@ -130,22 +132,7 @@ public class Compiler extends Thread {
 
     }
 
-    private boolean isCompletelyWritten(File file) {
-        RandomAccessFile stream = null;
-        try {
-            stream = new RandomAccessFile(file, "rw");
-            return true;
-        } catch (Exception e) {
-            log.info("Skipping file " + file.getName() + " for this iteration due it's not completely written");
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    log.error("Exception during closing file " + file.getName());
-                }
-            }
-        }
-        return false;
+    public String getClassName () {
+        return classJson.get("absoluteClassName").getAsString();
     }
 }

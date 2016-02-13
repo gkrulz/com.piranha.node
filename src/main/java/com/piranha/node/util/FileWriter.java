@@ -17,13 +17,16 @@ import java.io.IOException;
 public class FileWriter extends Thread{
     private static final Logger log = Logger.getLogger(FileWriter.class);
     private JsonObject responseJson;
-    private String testString;
+    private String className;
 
-    public FileWriter(JsonObject responseJson, String testString) {
+    public FileWriter(JsonObject responseJson, String className) {
         this.responseJson = responseJson;
-        this.testString = testString;
+        this.className = className;
     }
 
+    /***
+     * The overridden run method of Thread class
+     */
     @Override
     public void run() {
         try {
@@ -42,13 +45,17 @@ public class FileWriter extends Thread{
             IOUtils.copy(bis, fileOutputStream);
             fileOutputStream.close();
 
-            log.debug("Dependency " + getTestString() + " received");
+            log.debug("Dependency " + getClassName() + " received");
         } catch (IOException e) {
             log.error("Error" , e);
         }
     }
 
-    public String getTestString() {
-        return testString;
+    /***
+     * method to get the class name
+     * @return class name
+     */
+    public String getClassName() {
+        return className;
     }
 }

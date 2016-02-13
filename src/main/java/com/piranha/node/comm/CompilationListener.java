@@ -91,6 +91,7 @@ class CompilationInitializer extends Thread {
     private DependencyResponseListener dependencyResponseListener;
     private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
+    ArrayList<String> alreadyRequestedDependencies;
 
     public CompilationInitializer (String incomingMessage, HashMap<String, String> dependencyMap,
                                    DependencyResponseListener dependencyResponseListener,
@@ -101,11 +102,15 @@ class CompilationInitializer extends Thread {
         this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
         this.comm = new Communication();
+        alreadyRequestedDependencies = new ArrayList<>();
     }
 
+    /***
+     * The overridden run method of Thread class
+     */
     public void run () {
         JsonParser parser = new JsonParser();
-        ArrayList<Thread> compilers = new ArrayList<>();
+        HashMap<String, Compiler> compilers = new HashMap<>();
         Gson gson = new Gson();
 
         if (incomingMessage.charAt(0) == '[') {
@@ -133,9 +138,12 @@ class CompilationInitializer extends Thread {
 
                     File file = new File(filePath + dependencyPath);
 
-                    if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) && !(file.exists())) {
+                    if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
+                            !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
+
                         String className = dependency.getAsString();
                         locallyUnavailableDependencies.add(className);
+
                     }
                 }
             }
@@ -149,9 +157,9 @@ class CompilationInitializer extends Thread {
                 String ipAddress = dependencyMap.get(dependency);
 
                 try {
-                    this.resolve(ipAddress, dependency);
+                    this.requestDependency(ipAddress, dependency);
                 } catch (IOException e) {
-                    log.error("Unable to resolve dependency", e);
+                    log.error("Unable to request dependency", e);
                 }
             }
 
@@ -159,27 +167,21 @@ class CompilationInitializer extends Thread {
             for (JsonElement classJson : incomingMsgJson) {
                 Compiler compiler = null;
                 try {
-                    compiler = new Compiler(classJson.getAsJsonObject(), dependencyMap, dependencyResponseListener);
+                    compiler = new Compiler(classJson.getAsJsonObject(), dependencyResponseListener.getFileWriters(), compilers);
                 } catch (IOException e) {
                     log.error("Unable to initialize the compiler", e);
                 }
-                compilers.add(compiler);
+                compilers.put(classJson.getAsJsonObject().get("absoluteClassName").getAsString(), compiler);
                 compiler.start();
             }
 
-//                    for (Thread compiler : compilers) {
-//                        try {
-//                            compiler.join();
-//                        } catch (InterruptedException e) {
-//                            log.error("Error", e);
-//                        }
-//                    }
+            //Add all compilation threads to dependency request listener
+            dependencyRequestListener.setCompilers(compilers);
 
         } else if (incomingMessage.charAt(0) == '{') {
             JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
             if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
-                Type type = new TypeToken<HashMap<String, String>>() {
-                }.getType();
+                Type type = new TypeToken<HashMap<String, String>>() {}.getType();
                 HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
                 dependencyMap.putAll(tempDependencyMap);
                 dependencyRequestListener.setDependencyMap(this.dependencyMap);
@@ -187,14 +189,16 @@ class CompilationInitializer extends Thread {
         }
     }
 
-    public void resolve(String ipAddress, String dependency) throws IOException {
+    /***
+     * The method to request the dependencies needed.
+     * @param ipAddress ip address of the node which has the .class file
+     * @param dependency absolute class name of the dependency.
+     * @throws IOException
+     */
+    public void requestDependency(String ipAddress, String dependency) throws IOException {
         String localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
-        String filePath = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
-        String dependencyPath = dependency.replace(".", Constants.PATH_SEPARATOR) + ".class";
 
-        File file = new File(filePath + dependencyPath);
-
-        if (!(ipAddress.equals(localIpAddress)) && !(file.exists())) {
+        if (!(ipAddress.equals(localIpAddress))) {
             log.debug("asking for dependency - " + dependency + " at - " + ipAddress);
             Socket socket = new Socket(ipAddress, 10500);
 
@@ -204,6 +208,7 @@ class CompilationInitializer extends Thread {
 
             comm.writeToSocket(socket, dependencyRequest);
             socket.close();
+            alreadyRequestedDependencies.add(dependency);
         }
     }
 }

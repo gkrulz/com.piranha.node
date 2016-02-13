@@ -9,6 +9,9 @@ public class Constants {
     public static final String DESTINATION_PATH;
     public static final String PATH_SEPARATOR;
 
+    /***
+     * Static block to initialize the constants
+     */
     static {
         String pathSeparator = null;
 
