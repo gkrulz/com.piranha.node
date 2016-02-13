@@ -47,9 +47,6 @@ public class Compiler extends Thread {
             dependencyThreads.putAll(CompilationInitializer.getCompilers());
             dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
 
-//            log.debug();
-            log.debug(dependencyThreads.get(dependency.getAsString()) == null);
-
             //Waiting for dependencies to be compiled or arrive
             while (dependencyThreads.get(dependency.getAsString()) == null) {
 
@@ -62,8 +59,6 @@ public class Compiler extends Thread {
                 dependencyThreads.putAll(CompilationInitializer.getCompilers());
                 dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
             }
-
-            log.debug(dependencyThreads.get(dependency.getAsString()));
 
             //Checking thread liveliness
             while (dependencyThreads.get(dependency.getAsString()).isAlive()) {
@@ -126,9 +121,5 @@ public class Compiler extends Thread {
             throw new Exception("Compilation failed :" + output);
         }
 
-    }
-
-    public String getClassName () {
-        return classJson.get("absoluteClassName").getAsString();
     }
 }

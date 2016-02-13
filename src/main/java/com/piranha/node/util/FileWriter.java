@@ -43,6 +43,7 @@ public class FileWriter extends Thread{
             ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 
             IOUtils.copy(bis, fileOutputStream);
+            fileOutputStream.flush();
             fileOutputStream.close();
 
             log.debug("Dependency " + getClassName() + " received");
