@@ -13,10 +13,7 @@ import org.apache.log4j.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -78,10 +75,18 @@ public class Compiler extends Thread {
             File file = new File(path + packagePath);
 
             log.debug(path + packagePath);
-            log.debug(isFileInUse(file));
+            try {
+                log.debug(isFileInUse(file));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            while (isFileInUse(file)){
+            try {
+                while (isFileInUse(file)){
 
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
@@ -138,24 +143,19 @@ public class Compiler extends Thread {
 
     }
 
-    public boolean isFileInUse(File file) {
+    public boolean isFileInUse(File file) throws IOException {
         boolean isInUse = true;
 
+        FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
+
+        FileLock lock = channel.lock();
         try {
-            @SuppressWarnings("resource")
-            FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-            //This method blocks until it can retrieve the lock.
-            FileLock lock = channel.lock(); // Try acquiring the lock without blocking.
-            try {
-                lock = channel.tryLock();
-                isInUse = false;
-            } catch (OverlappingFileLockException e){
-                isInUse = true;
-            }
-            lock.release(); //close the file.
-            channel.close();
-        } catch (Exception e) {
+            lock = channel.tryLock();
+            isInUse = false;
+        } catch (OverlappingFileLockException e) {
             isInUse = true;
+        } finally {
+            lock.release();
         }
 
         return isInUse;
