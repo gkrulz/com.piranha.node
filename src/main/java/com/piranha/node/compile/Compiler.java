@@ -71,6 +71,7 @@ public class Compiler extends Thread {
                 }
             }
 
+            log.debug(DependencyRequestListener.getDependencyProviders());
             log.debug(DependencyRequestListener.getDependencyProviders().get(dependency) == null);
 
             while (DependencyRequestListener.getDependencyProviders().get(dependency) == null){
