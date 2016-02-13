@@ -139,7 +139,7 @@ class CompilationInitializer extends Thread {
 
                     File file = new File(filePath + dependencyPath);
 
-//                    log.debug(gson.toJson(dependencyMap));
+                    log.debug(gson.toJson(dependencyMap) + " - " + dependency.getAsString());
 
                     if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
                             !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
