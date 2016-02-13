@@ -21,7 +21,7 @@ import java.util.HashSet;
 public class CompilationListener extends Thread {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private Socket socket;
-//    protected HashMap<String, String> dependencyMap;
+    protected static HashMap<String, String> dependencyMap;
     private Communication comm;
     protected ArrayList<String> alreadyRequestedDependencies;
     protected DependencyRequestListener dependencyRequestListener;
@@ -29,7 +29,7 @@ public class CompilationListener extends Thread {
 
     public CompilationListener() {
         comm = new Communication();
-//        dependencyMap = new HashMap<>();
+        dependencyMap = new HashMap<>();
         alreadyRequestedDependencies = new ArrayList<>();
         dependencyRequestListener = new DependencyRequestListener();
         dependencyResponseListener = new DependencyResponseListener();
@@ -83,19 +83,19 @@ public class CompilationListener extends Thread {
 class CompilationInitializer extends CompilationListener {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private String incomingMessage;
-    private HashMap<String, String> dependencyMap;
+//    private HashMap<String, String> dependencyMap;
     private HashSet<String> locallyUnavailableDependencies;
-//    private DependencyResponseListener dependencyResponseListener;
+    //    private DependencyResponseListener dependencyResponseListener;
 //    private DependencyRequestListener dependencyRequestListener;
     private Communication comm;
 //    private ArrayList<String> alreadyRequestedDependencies;
 
-    public CompilationInitializer (String incomingMessage/*, HashMap<String, String> dependencyMap,
+    public CompilationInitializer(String incomingMessage/*, HashMap<String, String> dependencyMap,
                                    DependencyResponseListener dependencyResponseListener,
                                    DependencyRequestListener dependencyRequestListener,
                                    ArrayList<String> alreadyRequestedDependencies*/) {
         this.incomingMessage = incomingMessage;
-        this.dependencyMap = new HashMap<>();
+//        this.dependencyMap = new HashMap<>();
 //        this.dependencyResponseListener = dependencyResponseListener;
 //        this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
@@ -106,16 +106,25 @@ class CompilationInitializer extends CompilationListener {
     /***
      * The overridden run method of Thread class
      */
-    public void run () {
+    public void run() {
         JsonParser parser = new JsonParser();
         HashMap<String, Compiler> compilers = new HashMap<>();
         Gson gson = new Gson();
 
-        if (incomingMessage.charAt(0) == '[') {
-            JsonArray incomingMsgJson = parser.parse(incomingMessage).getAsJsonArray();
+        JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
+        if (incomingMsgJson.get("op").getAsString().equals("COMPILATION")) {
+            Type type = new TypeToken<HashMap<String, String>>() {
+            }.getType();
+            HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
+            dependencyMap.putAll(tempDependencyMap);
+            log.debug("dependency map updated - " + dependencyMap);
+            dependencyRequestListener.setDependencyMap(this.dependencyMap);
+
+            Type arrayListType = new TypeToken<ArrayList<JsonObject>>(){}.getType();
+            ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), type);
 
             //resolving the dependencies
-            for (JsonElement classJson : incomingMsgJson) {
+            for (JsonElement classJson : classes) {
                 JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
 
                 for (JsonElement dependency : dependencies) {
@@ -128,9 +137,9 @@ class CompilationInitializer extends CompilationListener {
                     }
 
                     log.debug(dependency.getAsString() + " - " + this.alreadyRequestedDependencies);
-                    log.debug(dependency.getAsString() + " - " + dependencyMap);
+                    log.debug(dependency.getAsString() + " - " + this.getDependencyMap());
 
-                    if (!(this.dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
+                    if (!(this.getDependencyMap().get(dependency.getAsString()).equals(localIpAddress)) &&
                             !(this.alreadyRequestedDependencies.contains(dependency.getAsString()))) {
 
                         String className = dependency.getAsString();
@@ -156,7 +165,7 @@ class CompilationInitializer extends CompilationListener {
             }
 
 
-            for (JsonElement classJson : incomingMsgJson) {
+            for (JsonElement classJson : classes) {
                 Compiler compiler = null;
                 try {
                     compiler = new Compiler(classJson.getAsJsonObject(), dependencyResponseListener.getFileWriters(), compilers);
@@ -170,22 +179,16 @@ class CompilationInitializer extends CompilationListener {
             //Add all compilation threads to dependency request listener
             dependencyRequestListener.setCompilers(compilers);
 
-        } else if (incomingMessage.charAt(0) == '{') {
-            JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
-            if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
-                Type type = new TypeToken<HashMap<String, String>>() {}.getType();
-                HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
-                dependencyMap.putAll(tempDependencyMap);
-                dependencyRequestListener.setDependencyMap(this.dependencyMap);
-            }
-        }
 
 //        log.debug(gson.toJson(dependencyMap));
+
+        }
     }
 
     /***
      * The method to request the dependencies needed.
-     * @param ipAddress ip address of the node which has the .class file
+     *
+     * @param ipAddress  ip address of the node which has the .class file
      * @param dependency absolute class name of the dependency.
      * @throws IOException
      */
@@ -204,5 +207,9 @@ class CompilationInitializer extends CompilationListener {
             socket.close();
             alreadyRequestedDependencies.add(dependency);
         }
+    }
+
+    public synchronized HashMap<String, String> getDependencyMap() {
+        return dependencyMap;
     }
 }
