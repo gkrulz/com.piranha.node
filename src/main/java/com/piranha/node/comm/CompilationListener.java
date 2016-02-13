@@ -21,7 +21,7 @@ import java.util.HashSet;
 public class CompilationListener extends Thread {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private Socket socket;
-    protected HashMap<String, String> dependencyMap;
+//    protected HashMap<String, String> dependencyMap;
     private Communication comm;
     protected ArrayList<String> alreadyRequestedDependencies;
     protected DependencyRequestListener dependencyRequestListener;
@@ -29,7 +29,7 @@ public class CompilationListener extends Thread {
 
     public CompilationListener() {
         comm = new Communication();
-        dependencyMap = new HashMap<>();
+//        dependencyMap = new HashMap<>();
         alreadyRequestedDependencies = new ArrayList<>();
         dependencyRequestListener = new DependencyRequestListener();
         dependencyResponseListener = new DependencyResponseListener();
@@ -83,7 +83,7 @@ public class CompilationListener extends Thread {
 class CompilationInitializer extends CompilationListener {
     private static final Logger log = Logger.getLogger(CompilationListener.class);
     private String incomingMessage;
-//    private HashMap<String, String> dependencyMap;
+    private HashMap<String, String> dependencyMap;
     private HashSet<String> locallyUnavailableDependencies;
 //    private DependencyResponseListener dependencyResponseListener;
 //    private DependencyRequestListener dependencyRequestListener;
@@ -95,7 +95,7 @@ class CompilationInitializer extends CompilationListener {
                                    DependencyRequestListener dependencyRequestListener,
                                    ArrayList<String> alreadyRequestedDependencies*/) {
         this.incomingMessage = incomingMessage;
-//        this.dependencyMap = new HashMap<>();
+        this.dependencyMap = new HashMap<>();
 //        this.dependencyResponseListener = dependencyResponseListener;
 //        this.dependencyRequestListener = dependencyRequestListener;
         this.locallyUnavailableDependencies = new HashSet<>();
