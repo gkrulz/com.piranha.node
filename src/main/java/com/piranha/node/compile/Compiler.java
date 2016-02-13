@@ -71,10 +71,10 @@ public class Compiler extends Thread {
                 }
             }
 
-            log.debug(dependency + " - " + DependencyRequestListener.getDependencyProviders());
+            log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
             log.debug(DependencyRequestListener.getDependencyProviders().get(dependency) == null);
 
-            while (DependencyRequestListener.getDependencyProviders().get(dependency) == null){
+            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null){
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
