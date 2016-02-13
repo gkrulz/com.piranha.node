@@ -15,8 +15,12 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.net.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.*;
 
 /**
@@ -67,6 +71,17 @@ public class Compiler extends Thread {
                 } catch (InterruptedException e) {
                     log.error("Error", e);
                 }
+            }
+
+            String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
+            String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
+            File file = new File(path + packagePath);
+
+            log.debug(path + packagePath);
+            log.debug(isFileInUse(file));
+
+            while (isFileInUse(file)){
+
             }
         }
 
@@ -121,5 +136,28 @@ public class Compiler extends Thread {
             throw new Exception("Compilation failed :" + output);
         }
 
+    }
+
+    public boolean isFileInUse(File file) {
+        boolean isInUse = true;
+
+        try {
+            @SuppressWarnings("resource")
+            FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
+            //This method blocks until it can retrieve the lock.
+            FileLock lock = channel.lock(); // Try acquiring the lock without blocking.
+            try {
+                lock = channel.tryLock();
+                isInUse = false;
+            } catch (OverlappingFileLockException e){
+                isInUse = true;
+            }
+            lock.release(); //close the file.
+            channel.close();
+        } catch (Exception e) {
+            log.error("Unable to read the file", e);
+        }
+
+        return isInUse;
     }
 }
