@@ -11,9 +11,7 @@ import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,14 +22,14 @@ public class CompilationListener extends Thread {
     private Socket socket;
     protected static ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
-    protected ArrayList<String> alreadyRequestedDependencies;
+    protected static List<String> alreadyRequestedDependencies;
     protected DependencyRequestListener dependencyRequestListener;
     protected DependencyResponseListener dependencyResponseListener;
 
     public CompilationListener() {
         comm = new Communication();
         dependencyMap = new ConcurrentHashMap<>();
-        alreadyRequestedDependencies = new ArrayList<>();
+        alreadyRequestedDependencies = Collections.synchronizedList(new ArrayList<>());
         dependencyRequestListener = new DependencyRequestListener();
         dependencyResponseListener = new DependencyResponseListener();
     }
