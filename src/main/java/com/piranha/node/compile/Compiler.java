@@ -3,6 +3,9 @@ package com.piranha.node.compile;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.piranha.node.comm.CompilationInitializer;
+import com.piranha.node.comm.CompilationListener;
+import com.piranha.node.comm.DependencyResponseListener;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.FileWriter;
 import org.apache.log4j.Logger;
@@ -23,15 +26,11 @@ public class Compiler extends Thread {
     private static final Logger log = Logger.getLogger(Compiler.class);
     private Properties properties;
     private JsonObject classJson;
-    private HashMap<String, FileWriter> fileWriters;
-    private HashMap<String, Compiler> compilers;
 
-    public Compiler(JsonObject classJson, HashMap<String, FileWriter> fileWriters, HashMap<String, Compiler> compilers) throws IOException {
+    public Compiler(JsonObject classJson) throws IOException {
         properties = new Properties();
         properties.load(Compiler.class.getClassLoader().getResourceAsStream("config.properties"));
         this.classJson = classJson;
-        this.fileWriters = fileWriters;
-        this.compilers = compilers;
     }
 
     /***
@@ -45,8 +44,11 @@ public class Compiler extends Thread {
         for (JsonElement dependency : dependencies) {
             HashMap<String, Thread> dependencyThreads = new HashMap<>();
 
-            dependencyThreads.putAll(fileWriters);
-            dependencyThreads.putAll(compilers);
+            dependencyThreads.putAll(CompilationInitializer.getCompilers());
+            dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
+
+//            log.debug();
+            log.debug(dependencyThreads.get(dependency.getAsString()) == null);
 
             //Waiting for dependencies to be compiled or arrive
             while (dependencyThreads.get(dependency.getAsString()) == null) {
@@ -57,8 +59,8 @@ public class Compiler extends Thread {
                     log.error("Error", e);
                 }
 
-                dependencyThreads.putAll(fileWriters);
-                dependencyThreads.putAll(compilers);
+                dependencyThreads.putAll(CompilationInitializer.getCompilers());
+                dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
             }
 
             log.debug(dependencyThreads.get(dependency.getAsString()));

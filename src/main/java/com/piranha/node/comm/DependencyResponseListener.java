@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Padmaka on 2/7/16.
@@ -19,12 +20,11 @@ public class DependencyResponseListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyResponseListener.class);
     private Communication comm;
     private HashSet<String> dependencies;
-    private HashMap<String, FileWriter> fileWriters;
+    private static ConcurrentHashMap<String, FileWriter> fileWriters = new ConcurrentHashMap<>();
 
     public DependencyResponseListener() {
         comm = new Communication();
         this.dependencies = new HashSet<>();
-        this.fileWriters = new HashMap<>();
     }
 
     /***
@@ -46,8 +46,6 @@ public class DependencyResponseListener extends Thread{
                 Socket socket = serverSocket.accept();
 
                 JsonObject responseJson = parser.parse(comm.readFromSocket(socket)).getAsJsonObject();
-
-                log.debug(responseJson.get("className").getAsString());
 
                 String testString = responseJson.get("className").getAsString();
                 testString = testString.replace("/", ".");
@@ -80,7 +78,7 @@ public class DependencyResponseListener extends Thread{
      * The method to get a hashmap of file writer threads
      * @return hashmap of file writer threads
      */
-    public HashMap<String, FileWriter> getFileWriters() {
+    public static ConcurrentHashMap<String, FileWriter> getFileWriters() {
         return fileWriters;
     }
 }

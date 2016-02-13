@@ -59,7 +59,7 @@ public class DependencyRequestListener extends Thread{
      * The method to set the compiler threads
      * @param compilers Hashmap of compiler threads
      */
-    public void setCompilers(HashMap<String, Compiler> compilers) {
+    public void setCompilers(ConcurrentHashMap<String, Compiler> compilers) {
         this.compilers.putAll(compilers);
     }
 }
