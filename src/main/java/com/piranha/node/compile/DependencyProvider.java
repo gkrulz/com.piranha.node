@@ -26,7 +26,7 @@ public class DependencyProvider extends Thread {
     private Communication comm;
     private ConcurrentHashMap<String, String> dependencyMap;
     private Socket socket;
-    private HashMap<String, Compiler> compilers;
+    private static HashMap<String, Compiler> compilers;
 
     public DependencyProvider(Socket socket) throws IOException {
         this.comm = new Communication();
