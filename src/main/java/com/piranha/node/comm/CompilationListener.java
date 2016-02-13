@@ -16,6 +16,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -138,7 +139,8 @@ class CompilationInitializer extends CompilationListener {
 
                     File file = new File(filePath + dependencyPath);
 
-                    log.debug(alreadyRequestedDependencies + " - " + dependency.getAsString());
+                    log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
+                    log.debug(dependency.getAsString() + " - " + dependencyMap);
 
                     if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
                             !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
@@ -174,7 +176,7 @@ class CompilationInitializer extends CompilationListener {
                     log.error("Unable to initialize the compiler", e);
                 }
                 compilers.put(classJson.getAsJsonObject().get("absoluteClassName").getAsString(), compiler);
-                compiler.start();
+//                compiler.start();
             }
 
             //Add all compilation threads to dependency request listener
@@ -185,8 +187,19 @@ class CompilationInitializer extends CompilationListener {
             if (incomingMsgJson.get("op").getAsString().equals("dependencyMap")) {
                 Type type = new TypeToken<HashMap<String, String>>() {}.getType();
                 HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("message").getAsString(), type);
+                log.debug(tempDependencyMap);
                 dependencyMap.putAll(tempDependencyMap);
                 dependencyRequestListener.setDependencyMap(this.dependencyMap);
+
+                Iterator iterator = compilers.entrySet().iterator();
+
+                while (iterator.hasNext()) {
+                    HashMap.Entry pair = (HashMap.Entry)iterator.next();
+
+                    Thread compiler = (Thread) pair.getValue();
+                    compiler.start();
+                    iterator.remove(); // avoids a ConcurrentModificationException
+                }
             }
         }
 
