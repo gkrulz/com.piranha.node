@@ -65,7 +65,7 @@ public class CompilationInitializer extends CompilationListener {
                         }
 
 //                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
-//                    log.debug(dependency.getAsString() + " - " + dependencyMap);
+//                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
 //                        while (dependencyMap.get(dependency.getAsString()) == null) {
 //
