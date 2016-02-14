@@ -52,11 +52,11 @@ public class Compiler extends Thread {
             //Waiting for dependencies to be compiled or arrive
             while (dependencyThreads.get(dependency.getAsString()) == null) {
 
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
 
                 dependencyThreads.putAll(CompilationInitializer.getCompilers());
                 dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
@@ -64,11 +64,11 @@ public class Compiler extends Thread {
 
             //Checking thread liveliness
             while (dependencyThreads.get(dependency.getAsString()).isAlive()) {
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    log.error("Error", e);
+                }
             }
 
 

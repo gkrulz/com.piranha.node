@@ -50,21 +50,21 @@ public class DependencyProvider extends DependencyRequestListener {
         log.debug(compilers.get(requestJson.get("dependency").getAsString()) == null);
 
         while (compilers.get(requestJson.get("dependency").getAsString()) == null) {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                log.error("Error", e);
-//            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                log.error("Error", e);
+            }
         }
 
         //checking whether the requested dependency is done compiling.
         Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
         while (dependencyCompiler.isAlive()) {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                log.error("Error", e);
-//            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                log.error("Error", e);
+            }
         }
 
         //Getting the request origin ip to send back the response

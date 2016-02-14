@@ -68,7 +68,11 @@ public class CompilationInitializer extends CompilationListener {
 //                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
                         while (dependencyMap.get(dependency.getAsString()) == null) {
-
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                log.error("Unable to sleep thread");
+                            }
                         }
 
                         if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
