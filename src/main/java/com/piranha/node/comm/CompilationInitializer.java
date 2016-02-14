@@ -67,9 +67,9 @@ public class CompilationInitializer extends CompilationListener {
 //                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-//                        while (dependencyMap.get(dependency.getAsString()) == null) {
-//
-//                        }
+                        while (dependencyMap.get(dependency.getAsString()) == null) {
+
+                        }
 
                         if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
                                 !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
