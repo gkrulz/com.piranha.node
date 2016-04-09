@@ -40,6 +40,8 @@ public class CompilationInitializer extends CompilationListener {
      * The overridden run method of Thread class
      */
     public void run() {
+        log.debug("Init Started " + "THREAD - " + Thread.currentThread().getId());
+
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
         Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {
@@ -60,54 +62,56 @@ public class CompilationInitializer extends CompilationListener {
             }.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
-            //resolving the dependencies
-            for (JsonElement classJson : classes) {
-                ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.getAsJsonObject().get("dependencies").getAsString(), mapType);
+            synchronized (CompilationInitializer.class) {
+                //resolving the dependencies
+                for (JsonElement classJson : classes) {
+                    ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.getAsJsonObject().get("dependencies").getAsString(), mapType);
 
-                for (String dependency : dependencies.values()) {
+                    for (String dependency : dependencies.values()) {
 
-                    String localIpAddress = null;
-                    try {
-                        localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
-                    } catch (SocketException e) {
-                        log.error("Unable to get the local IP", e);
-                    }
+                        String localIpAddress = null;
+                        try {
+                            localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+                        } catch (SocketException e) {
+                            log.error("Unable to get the local IP", e);
+                        }
 
 //                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                    while (dependencyMap.get(dependency) == null) {
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException e) {
-                            log.error("Unable to sleep thread");
+                        while (dependencyMap.get(dependency) == null) {
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                log.error("Unable to sleep thread");
+                            }
+                        }
+
+                        if (!(dependencyMap.get(dependency).equals(localIpAddress)) &&
+                                !(alreadyRequestedDependencies.contains(dependency))) {
+
+                            String className = dependency;
+                            locallyUnavailableDependencies.add(className);
+
                         }
                     }
-
-                    if (!(dependencyMap.get(dependency).equals(localIpAddress)) &&
-                            !(alreadyRequestedDependencies.contains(dependency))) {
-
-                        String className = dependency;
-                        locallyUnavailableDependencies.add(className);
-
-                    }
                 }
-            }
 
 //            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
-            log.debug("goda");
+                log.debug("Mada " + "THREAD - " + Thread.currentThread().getId());
 
-            //add dependencies in each round
-            dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
+                //add dependencies in each round
+                dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
 
-            for (String dependency : locallyUnavailableDependencies) {
-                String ipAddress = dependencyMap.get(dependency);
+                for (String dependency : locallyUnavailableDependencies) {
+                    String ipAddress = dependencyMap.get(dependency);
 
-                try {
-                    alreadyRequestedDependencies.add(dependency);
-                    this.requestDependency(ipAddress, dependency);
-                } catch (IOException e) {
-                    log.error("Unable to request dependency", e);
+                    try {
+                        alreadyRequestedDependencies.add(dependency);
+                        this.requestDependency(ipAddress, dependency);
+                    } catch (IOException e) {
+                        log.error("Unable to request dependency", e);
+                    }
                 }
             }
             //-------------------------------------------------------
@@ -116,56 +120,48 @@ public class CompilationInitializer extends CompilationListener {
             log.debug(classes.size());
 
             int x = 0;
+            innerloop:
             while (x < classes.size()) {
-                JsonElement[] processChunk = new JsonElement[threadCount];
 
-                innerloop:
-                for (int y = 0; y < threadCount; y++) {
 
-                    if (x >= classes.size()) {
-                        break;
-                    }
-
-                    JsonElement currentElement = classes.get(x);
-                    ConcurrentHashMap<String, String> dependencies = gson.fromJson(currentElement.getAsJsonObject().get("dependencies").getAsString(), mapType);
-
-                    for (String dependency : dependencies.values()) {
-
-                        HashMap<String, Thread> dependencyThreads = new HashMap<>();
-                        HashMap<String, Future<?>> futureDependencyThreads = new HashMap<>();
-
-                        futureDependencyThreads.putAll(CompilationInitializer.getCompilers());
-                        dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
-
-                        if ((dependencyThreads.get(dependency) == null ||
-                                dependencyThreads.get(dependency).isAlive()) && (
-                                futureDependencyThreads.get(dependency) == null ||
-                                        !futureDependencyThreads.get(dependency).isDone())) {
-
-                            classes.remove(x);
-                            classes.add(currentElement.getAsJsonObject());
-                            continue innerloop;
-                        }
-
-                    }
-                    x++;
-                    Compiler compiler = null;
-                    try {
-                        compiler = new Compiler(currentElement.getAsJsonObject());
-                    } catch (IOException e) {
-                        log.error("Unable to initialize the compiler", e);
-                    }
-
-                    Future<?> futureThread = service.submit(compiler);
-                    compilers.put(currentElement.getAsJsonObject().get("absoluteClassName").getAsString(), futureThread);
+                if (x >= classes.size()) {
+                    break;
                 }
 
-            }
+                JsonElement currentElement = classes.get(x);
+                ConcurrentHashMap<String, String> dependencies = gson.fromJson(currentElement.getAsJsonObject().get("dependencies").getAsString(), mapType);
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                for (String dependency : dependencies.values()) {
+
+                    HashMap<String, Thread> dependencyThreads = new HashMap<>();
+                    HashMap<String, Future<?>> futureDependencyThreads = new HashMap<>();
+
+                    futureDependencyThreads.putAll(CompilationInitializer.getCompilers());
+                    dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
+
+                    if ((dependencyThreads.get(dependency) == null ||
+                            dependencyThreads.get(dependency).isAlive()) && (
+                            futureDependencyThreads.get(dependency) == null ||
+                                    !futureDependencyThreads.get(dependency).isDone())) {
+
+                        classes.remove(x);
+                        classes.add(currentElement.getAsJsonObject());
+                        continue innerloop;
+                    }
+
+                }
+                x++;
+                Compiler compiler = null;
+                try {
+                    compiler = new Compiler(currentElement.getAsJsonObject());
+                } catch (IOException e) {
+                    log.error("Unable to initialize the compiler", e);
+                }
+
+                Future<?> futureThread = service.submit(compiler);
+                compilers.put(currentElement.getAsJsonObject().get("absoluteClassName").getAsString(), futureThread);
+
+
             }
 
             //-------------------------------------------------------

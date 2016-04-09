@@ -13,6 +13,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -37,6 +39,9 @@ public class CompilationListener extends Thread {
     /***
      * The overridden run method of Thread class
      */
+
+    ExecutorService service = Executors.newFixedThreadPool(1);
+
     @Override
     public void run() {
 
@@ -74,7 +79,8 @@ public class CompilationListener extends Thread {
             }
 
             CompilationInitializer compilationInitializer = new CompilationInitializer(incomingMessage);
-            compilationInitializer.start();
+            log.debug("Innitalizing");
+            service.submit(compilationInitializer);
         }
     }
 }
