@@ -95,6 +95,7 @@ public class CompilationInitializer extends CompilationListener {
             }
 
 //            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
+            log.debug("goda");
 
             //add dependencies in each round
             dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
@@ -109,7 +110,6 @@ public class CompilationInitializer extends CompilationListener {
                     log.error("Unable to request dependency", e);
                 }
             }
-            log.debug("goda");
             //-------------------------------------------------------
             int threadCount = 8; //TODO load the threadCount from properties
             ExecutorService service = Executors.newFixedThreadPool(threadCount);
@@ -136,10 +136,10 @@ public class CompilationInitializer extends CompilationListener {
                         futureDependencyThreads.putAll(CompilationInitializer.getCompilers());
                         dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
 
-                        if (dependencyThreads.get(dependency) == null ||
-                                dependencyThreads.get(dependency).isAlive() ||
+                        if ((dependencyThreads.get(dependency) == null ||
+                                dependencyThreads.get(dependency).isAlive()) && (
                                 futureDependencyThreads.get(dependency) == null ||
-                                !futureDependencyThreads.get(dependency).isDone()) {
+                                        !futureDependencyThreads.get(dependency).isDone())) {
 
                             classes.remove(--x);
                             classes.add(currentElement.getAsJsonObject());
