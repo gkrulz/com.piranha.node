@@ -115,7 +115,8 @@ public class CompilationInitializer extends CompilationListener {
             ExecutorService service = Executors.newFixedThreadPool(threadCount);
             log.debug(classes.size());
 
-            for (int x = 0; x < classes.size(); x++) {
+            int x = 0;
+            while (x < classes.size()) {
                 JsonElement[] processChunk = new JsonElement[threadCount];
 
                 innerloop:
@@ -125,7 +126,7 @@ public class CompilationInitializer extends CompilationListener {
                         break;
                     }
 
-                    JsonElement currentElement = classes.get(x++);
+                    JsonElement currentElement = classes.get(x);
                     ConcurrentHashMap<String, String> dependencies = gson.fromJson(currentElement.getAsJsonObject().get("dependencies").getAsString(), mapType);
 
                     for (String dependency : dependencies.values()) {
@@ -141,12 +142,13 @@ public class CompilationInitializer extends CompilationListener {
                                 futureDependencyThreads.get(dependency) == null ||
                                         !futureDependencyThreads.get(dependency).isDone())) {
 
-                            classes.remove(--x);
+                            classes.remove(x);
                             classes.add(currentElement.getAsJsonObject());
                             continue innerloop;
                         }
-                    }
 
+                    }
+                    x++;
                     Compiler compiler = null;
                     try {
                         compiler = new Compiler(currentElement.getAsJsonObject());
