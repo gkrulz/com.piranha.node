@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 /**
  * Created by Padmaka on 2/6/16.
@@ -58,8 +59,8 @@ public class DependencyProvider extends DependencyRequestListener {
         }
 
         //checking whether the requested dependency is done compiling.
-        Compiler dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
-        while (dependencyCompiler.isAlive()) {
+        Future<?> dependencyCompiler = compilers.get(requestJson.get("dependency").getAsString());
+        while (!dependencyCompiler.isDone()) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -116,7 +117,7 @@ public class DependencyProvider extends DependencyRequestListener {
         this.dependencyMap = dependencyMap;
     }
 
-    public void addCompilers(HashMap<String, Compiler> compilers) {
+    public void addCompilers(HashMap<String, Future<?>> compilers) {
         this.compilers.putAll(compilers);
     }
 }

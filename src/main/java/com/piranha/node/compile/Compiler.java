@@ -44,64 +44,6 @@ public class Compiler extends Thread {
      */
     @Override
     public void run() {
-        Gson gson = new Gson();
-        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {}.getType();
-        //resolving the dependencies
-        ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.get("dependencies").getAsString(), mapType);
-
-        for (String dependency : dependencies.values()) {
-            HashMap<String, Thread> dependencyThreads = new HashMap<>();
-
-            dependencyThreads.putAll(CompilationInitializer.getCompilers());
-            dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
-
-            //Waiting for dependencies to be compiled or arrive
-            while (dependencyThreads.get(dependency) == null) {
-
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
-
-                dependencyThreads.putAll(CompilationInitializer.getCompilers());
-                dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
-            }
-
-            //Checking thread liveliness
-            while (dependencyThreads.get(dependency).isAlive()) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    log.error("Error", e);
-                }
-            }
-
-
-////            log.debug(dependency.getAsString() + " - " + DependencyRequestListener.getDependencyProviders());
-//            log.debug(DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null);
-//
-//            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()) == null){
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
-//            }
-//
-//            while (DependencyRequestListener.getDependencyProviders().get(dependency.getAsString()).isAlive()){
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    log.error("Error", e);
-//                }
-//            }
-
-//            String path = Constants.DESTINATION_PATH + Constants.PATH_SEPARATOR;
-//            String packagePath = dependency.getAsString().replace(".", Constants.PATH_SEPARATOR) + ".class";
-//            File file = new File(path + packagePath);
-
-        }
 
         StringBuilder packageName = new StringBuilder(classJson.get("package").getAsString());
         StringBuilder classString = new StringBuilder("package " + packageName.replace(packageName.length() - 1, packageName.length(), "") + ";\n");
@@ -143,7 +85,7 @@ public class Compiler extends Thread {
         for (URL url : urlClassLoader.getURLs()) {
             sb.append(url.getFile()).append(File.pathSeparator);
         }
-        sb.append(properties.getProperty("CLASSPATH"));
+        sb.append("/Users/bhanukayd/Desktop/Piranha/com.piranha.node/destination");
         options.add(sb.toString());
 
         StringWriter output = new StringWriter();

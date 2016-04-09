@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 /**
  * Created by Padmaka on 2/7/16.
@@ -21,7 +22,7 @@ public class DependencyRequestListener extends Thread{
     private static final Logger log = Logger.getLogger(DependencyRequestListener.class);
     private ConcurrentHashMap<String, String> dependencyMap;
     private Communication comm;
-    protected static ConcurrentHashMap<String, Compiler> compilers = new ConcurrentHashMap<>();
+    protected static ConcurrentHashMap<String, Future<?>> compilers = new ConcurrentHashMap<>();
     protected static ConcurrentHashMap<String, DependencyProvider> dependencyProviders = new ConcurrentHashMap<>();
 
     public DependencyRequestListener() {
@@ -76,7 +77,7 @@ public class DependencyRequestListener extends Thread{
      * The method to set the compiler threads
      * @param compilers Hashmap of compiler threads
      */
-    public void setCompilers(ConcurrentHashMap<String, Compiler> compilers) {
+    public void setCompilers(ConcurrentHashMap<String, Future<?>> compilers) {
         this.compilers.putAll(compilers);
     }
 

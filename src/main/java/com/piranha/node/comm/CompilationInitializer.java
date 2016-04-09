@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by Padmaka on 2/14/16.
@@ -25,7 +28,7 @@ public class CompilationInitializer extends CompilationListener {
     private String incomingMessage;
     private HashSet<String> locallyUnavailableDependencies;
     private Communication comm;
-    private static ConcurrentHashMap<String, Compiler> compilers = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Future<?>> compilers = new ConcurrentHashMap<>();
 
     public CompilationInitializer(String incomingMessage) {
         this.incomingMessage = incomingMessage;
@@ -39,12 +42,15 @@ public class CompilationInitializer extends CompilationListener {
     public void run() {
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
-        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {}.getType();
+        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {
+        }.getType();
 
         JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
         if (incomingMsgJson.get("op").getAsString().equals("COMPILATION")) {
+
             Type type = new TypeToken<HashMap<String, String>>() {
             }.getType();
+
             HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
             this.dependencyMap.putAll(tempDependencyMap);
             dependencyRequestListener.setDependencyMap(dependencyMap);
@@ -54,61 +60,111 @@ public class CompilationInitializer extends CompilationListener {
             }.getType();
             ArrayList<JsonObject> classes = gson.fromJson(incomingMsgJson.get("classes").getAsString(), arrayListType);
 
-            synchronized (CompilationInitializer.class) {
-                //resolving the dependencies
-                for (JsonElement classJson : classes) {
-                    ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.getAsJsonObject().get("dependencies").getAsString(), mapType);
+            //resolving the dependencies
+            for (JsonElement classJson : classes) {
+                ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.getAsJsonObject().get("dependencies").getAsString(), mapType);
 
-                    for (String dependency : dependencies.values()) {
+                for (String dependency : dependencies.values()) {
 
-                        String localIpAddress = null;
-                        try {
-                            localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
-                        } catch (SocketException e) {
-                            log.error("Unable to get the local IP", e);
-                        }
+                    String localIpAddress = null;
+                    try {
+                        localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+                    } catch (SocketException e) {
+                        log.error("Unable to get the local IP", e);
+                    }
 
 //                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                        while (dependencyMap.get(dependency) == null) {
-                            try {
-                                Thread.sleep(50);
-                            } catch (InterruptedException e) {
-                                log.error("Unable to sleep thread");
-                            }
-                        }
-
-                        if (!(dependencyMap.get(dependency).equals(localIpAddress)) &&
-                                !(alreadyRequestedDependencies.contains(dependency))) {
-
-                            String className = dependency;
-                            locallyUnavailableDependencies.add(className);
-
+                    while (dependencyMap.get(dependency) == null) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            log.error("Unable to sleep thread");
                         }
                     }
+
+                    if (!(dependencyMap.get(dependency).equals(localIpAddress)) &&
+                            !(alreadyRequestedDependencies.contains(dependency))) {
+
+                        String className = dependency;
+                        locallyUnavailableDependencies.add(className);
+
+                    }
                 }
+            }
 
 //            log.debug("Locally Unavailable dependencies - " + locallyUnavailableDependencies);
 
-                //add dependencies in each round
-                dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
+            //add dependencies in each round
+            dependencyResponseListener.addDependencies(locallyUnavailableDependencies);
 
-                for (String dependency : locallyUnavailableDependencies) {
-                    String ipAddress = dependencyMap.get(dependency);
+            for (String dependency : locallyUnavailableDependencies) {
+                String ipAddress = dependencyMap.get(dependency);
 
-                    try {
-                        alreadyRequestedDependencies.add(dependency);
-                        this.requestDependency(ipAddress, dependency);
-                    } catch (IOException e) {
-                        log.error("Unable to request dependency", e);
-                    }
+                try {
+                    alreadyRequestedDependencies.add(dependency);
+                    this.requestDependency(ipAddress, dependency);
+                } catch (IOException e) {
+                    log.error("Unable to request dependency", e);
                 }
+            }
+            log.debug("goda");
+            //-------------------------------------------------------
+            int threadCount = 8; //TODO load the threadCount from properties
+            ExecutorService service = Executors.newFixedThreadPool(threadCount);
+            log.debug(classes.size());
 
+            for (int x = 0; x < classes.size(); x++) {
+                JsonElement[] processChunk = new JsonElement[threadCount];
+
+                innerloop:
+                for (int y = 0; y < threadCount; y++) {
+
+                    if (x >= classes.size()) {
+                        break;
+                    }
+
+                    JsonElement currentElement = classes.get(x++);
+                    ConcurrentHashMap<String, String> dependencies = gson.fromJson(currentElement.getAsJsonObject().get("dependencies").getAsString(), mapType);
+
+                    for (String dependency : dependencies.values()) {
+
+                        HashMap<String, Thread> dependencyThreads = new HashMap<>();
+                        HashMap<String, Future<?>> futureDependencyThreads = new HashMap<>();
+
+                        futureDependencyThreads.putAll(CompilationInitializer.getCompilers());
+                        dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
+
+                        if (dependencyThreads.get(dependency) == null ||
+                                dependencyThreads.get(dependency).isAlive() ||
+                                futureDependencyThreads.get(dependency) == null ||
+                                !futureDependencyThreads.get(dependency).isDone()) {
+
+                            classes.remove(--x);
+                            classes.add(currentElement.getAsJsonObject());
+                            continue innerloop;
+                        }
+                    }
+
+                    Compiler compiler = null;
+                    try {
+                        compiler = new Compiler(currentElement.getAsJsonObject());
+                    } catch (IOException e) {
+                        log.error("Unable to initialize the compiler", e);
+                    }
+
+                    Future<?> futureThread = service.submit(compiler);
+                    compilers.put(currentElement.getAsJsonObject().get("absoluteClassName").getAsString(), futureThread);
+                }
             }
 
+            //-------------------------------------------------------
 
-            for (JsonElement classJson : classes) {
+
+            /*for (JsonElement classJson : classes) {
+
+
                 Compiler compiler = null;
                 try {
                     compiler = new Compiler(classJson.getAsJsonObject());
@@ -117,7 +173,7 @@ public class CompilationInitializer extends CompilationListener {
                 }
                 compilers.put(classJson.getAsJsonObject().get("absoluteClassName").getAsString(), compiler);
                 compiler.start();
-            }
+            }*/
 
             //Add all compilation threads to dependency request listener
             dependencyRequestListener.setCompilers(compilers);
@@ -126,7 +182,8 @@ public class CompilationInitializer extends CompilationListener {
 //        log.debug(gson.toJson(dependencyMap));
 
         } else if (incomingMsgJson.get("op").getAsString().equals("TERMINATE")) {
-            Type type = new TypeToken<HashMap<String, String>>() {}.getType();
+            Type type = new TypeToken<HashMap<String, String>>() {
+            }.getType();
             HashMap<String, String> fullDependencyMap = gson.fromJson(incomingMsgJson.get("classes").getAsString(), type);
             ArrayList<String> filesRequired = new ArrayList<>();
             String localIpAddress = null;
@@ -169,7 +226,7 @@ public class CompilationInitializer extends CompilationListener {
         socket.close();
     }
 
-    public static ConcurrentHashMap<String, Compiler> getCompilers() {
+    public static ConcurrentHashMap<String, Future<?>> getCompilers() {
         return compilers;
     }
 }

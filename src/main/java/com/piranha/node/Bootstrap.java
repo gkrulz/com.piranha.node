@@ -2,6 +2,8 @@ package com.piranha.node;
 
 import com.piranha.node.comm.CompilationListener;
 import com.piranha.node.util.Communication;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+import com.sun.xml.internal.bind.v2.runtime.output.SAXOutput;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -41,9 +43,7 @@ public class Bootstrap {
         }
 
         try {
-
-            Socket socket = new Socket(properties.getProperty("MASTER_NODE_IP"), 9005);
-
+            Socket socket = new Socket("192.168.1.4", 9005);
             log.info("Connected to master node on - " + socket.getInetAddress().getHostAddress());
 
             // Initializing and stating the listener for compilation.
