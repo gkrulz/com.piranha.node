@@ -1,8 +1,10 @@
 package com.piranha.node.compile;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.piranha.node.comm.CompilationInitializer;
 import com.piranha.node.comm.CompilationListener;
 import com.piranha.node.comm.DependencyRequestListener;
@@ -15,11 +17,13 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Padmaka on 1/26/16.
@@ -40,17 +44,19 @@ public class Compiler extends Thread {
      */
     @Override
     public void run() {
+        Gson gson = new Gson();
+        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {}.getType();
         //resolving the dependencies
-        JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
+        ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.get("dependencies").getAsString(), mapType);
 
-        for (JsonElement dependency : dependencies) {
+        for (String dependency : dependencies.values()) {
             HashMap<String, Thread> dependencyThreads = new HashMap<>();
 
             dependencyThreads.putAll(CompilationInitializer.getCompilers());
             dependencyThreads.putAll(DependencyResponseListener.getFileWriters());
 
             //Waiting for dependencies to be compiled or arrive
-            while (dependencyThreads.get(dependency.getAsString()) == null) {
+            while (dependencyThreads.get(dependency) == null) {
 
                 try {
                     Thread.sleep(50);
@@ -63,7 +69,7 @@ public class Compiler extends Thread {
             }
 
             //Checking thread liveliness
-            while (dependencyThreads.get(dependency.getAsString()).isAlive()) {
+            while (dependencyThreads.get(dependency).isAlive()) {
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
