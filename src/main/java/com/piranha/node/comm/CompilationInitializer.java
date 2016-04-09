@@ -1,10 +1,12 @@
 package com.piranha.node.comm;
 
 import com.google.gson.*;
+import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.compile.Compiler;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
+import org.apache.log4j.varia.StringMatchFilter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -37,6 +39,7 @@ public class CompilationInitializer extends CompilationListener {
     public void run() {
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
+        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {}.getType();
 
         JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
         if (incomingMsgJson.get("op").getAsString().equals("COMPILATION")) {
@@ -45,6 +48,7 @@ public class CompilationInitializer extends CompilationListener {
             HashMap<String, String> tempDependencyMap = gson.fromJson(incomingMsgJson.get("dependencyMap").getAsString(), type);
             this.dependencyMap.putAll(tempDependencyMap);
             dependencyRequestListener.setDependencyMap(dependencyMap);
+            log.debug(gson.toJson(dependencyMap));
 
             Type arrayListType = new TypeToken<ArrayList<JsonObject>>() {
             }.getType();
@@ -53,9 +57,9 @@ public class CompilationInitializer extends CompilationListener {
             synchronized (CompilationInitializer.class) {
                 //resolving the dependencies
                 for (JsonElement classJson : classes) {
-                    JsonArray dependencies = classJson.getAsJsonObject().get("dependencies").getAsJsonArray();
+                    ConcurrentHashMap<String, String> dependencies = gson.fromJson(classJson.getAsJsonObject().get("dependencies").getAsString(), mapType);
 
-                    for (JsonElement dependency : dependencies) {
+                    for (String dependency : dependencies.values()) {
 
                         String localIpAddress = null;
                         try {
@@ -67,7 +71,7 @@ public class CompilationInitializer extends CompilationListener {
 //                        log.debug(dependency.getAsString() + " - " + alreadyRequestedDependencies);
 //                        log.debug(dependency.getAsString() + " - " + dependencyMap);
 
-                        while (dependencyMap.get(dependency.getAsString()) == null) {
+                        while (dependencyMap.get(dependency) == null) {
                             try {
                                 Thread.sleep(50);
                             } catch (InterruptedException e) {
@@ -75,10 +79,10 @@ public class CompilationInitializer extends CompilationListener {
                             }
                         }
 
-                        if (!(dependencyMap.get(dependency.getAsString()).equals(localIpAddress)) &&
-                                !(alreadyRequestedDependencies.contains(dependency.getAsString()))) {
+                        if (!(dependencyMap.get(dependency).equals(localIpAddress)) &&
+                                !(alreadyRequestedDependencies.contains(dependency))) {
 
-                            String className = dependency.getAsString();
+                            String className = dependency;
                             locallyUnavailableDependencies.add(className);
 
                         }
@@ -121,6 +125,26 @@ public class CompilationInitializer extends CompilationListener {
 
 //        log.debug(gson.toJson(dependencyMap));
 
+        } else if (incomingMsgJson.get("op").getAsString().equals("TERMINATE")) {
+            Type type = new TypeToken<HashMap<String, String>>() {}.getType();
+            HashMap<String, String> fullDependencyMap = gson.fromJson(incomingMsgJson.get("classes").getAsString(), type);
+            ArrayList<String> filesRequired = new ArrayList<>();
+            String localIpAddress = null;
+            try {
+                localIpAddress = Communication.getFirstNonLoopbackAddress(true, false).getHostAddress();
+            } catch (SocketException e) {
+                log.error("Unable to get the local ip", e);
+            }
+
+            for (Object key : fullDependencyMap.keySet()) {
+                String className = (String) key;
+                String ipAddress = fullDependencyMap.get(className);
+                if (localIpAddress.equals(ipAddress)) {
+                    filesRequired.add(className);
+                }
+            }
+
+            log.debug(filesRequired);
         }
     }
 
