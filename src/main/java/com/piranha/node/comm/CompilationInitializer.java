@@ -159,6 +159,13 @@ public class CompilationInitializer extends CompilationListener {
                     Future<?> futureThread = service.submit(compiler);
                     compilers.put(currentElement.getAsJsonObject().get("absoluteClassName").getAsString(), futureThread);
                 }
+
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             //-------------------------------------------------------
