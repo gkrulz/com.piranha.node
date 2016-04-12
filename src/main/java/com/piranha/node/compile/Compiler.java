@@ -85,7 +85,7 @@ public class Compiler extends Thread {
         for (URL url : urlClassLoader.getURLs()) {
             sb.append(url.getFile()).append(File.pathSeparator);
         }
-        sb.append("/Users/bhanukayd/Desktop/Piranha/com.piranha.node/destination");
+        sb.append("/Users/Padmaka/dev/idea_projects/com.piranha.node/destination");
         options.add(sb.toString());
 
         StringWriter output = new StringWriter();

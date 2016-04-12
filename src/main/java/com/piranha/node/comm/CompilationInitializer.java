@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.piranha.node.compile.Compiler;
+import com.piranha.node.compile.DependencyProvider;
 import com.piranha.node.util.Communication;
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.StringMatchFilter;
@@ -15,6 +16,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,11 +31,19 @@ public class CompilationInitializer extends CompilationListener {
     private HashSet<String> locallyUnavailableDependencies;
     private Communication comm;
     private static ConcurrentHashMap<String, Future<?>> compilers = new ConcurrentHashMap<>();
+    private Properties properties;
 
     public CompilationInitializer(String incomingMessage) {
         this.incomingMessage = incomingMessage;
         this.locallyUnavailableDependencies = new HashSet<>();
         this.comm = new Communication();
+        this.properties = new Properties();
+        //loading property file.
+        try {
+            properties.load(CompilationInitializer.class.getClassLoader().getResourceAsStream("config.properties"));
+        } catch (IOException e) {
+            log.error("Unable to load the property file 'config.properties'", e);
+        }
     }
 
     /***
@@ -44,8 +54,7 @@ public class CompilationInitializer extends CompilationListener {
 
         JsonParser parser = new JsonParser();
         Gson gson = new Gson();
-        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {
-        }.getType();
+        Type mapType = new TypeToken<ConcurrentHashMap<String, String>>() {}.getType();
 
         JsonObject incomingMsgJson = parser.parse(incomingMessage).getAsJsonObject();
         if (incomingMsgJson.get("op").getAsString().equals("COMPILATION")) {
@@ -204,6 +213,30 @@ public class CompilationInitializer extends CompilationListener {
                 if (localIpAddress.equals(ipAddress)) {
                     filesRequired.add(className);
                 }
+            }
+
+            Socket socket = null;
+
+            try {
+                socket = new Socket(properties.getProperty("MASTER_NODE_IP"), 10000);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            for (String fileName : filesRequired){
+                JsonObject dependencyRequest = new JsonObject();
+                dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
+                dependencyRequest.addProperty("dependency", fileName);
+
+                DependencyProvider dependencyProvider = null;
+
+                try {
+                    dependencyProvider = new DependencyProvider(dependencyRequest, socket);
+                } catch (IOException e) {
+                    log.error("Unable to initialize dependency  provider.", e);
+                }
+
+                dependencyProvider.start();
             }
 
             log.debug(filesRequired);
