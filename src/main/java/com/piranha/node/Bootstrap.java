@@ -3,6 +3,7 @@ package com.piranha.node;
 import com.piranha.node.comm.CompilationListener;
 import com.piranha.node.constants.Constants;
 import com.piranha.node.util.Communication;
+import com.piranha.node.util.Utils;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import com.sun.xml.internal.bind.v2.runtime.output.SAXOutput;
 import org.apache.log4j.Logger;
@@ -23,6 +24,8 @@ public class Bootstrap {
      * @param args no arguments
      */
     public static void main(String[] args) {
+        Utils.deleteDirectory(new File("/Users/bhanukayd/Desktop/Piranha/com.piranha.node/destination"));
+
         Communication comm = new Communication();
         Properties properties = new Properties();
 
@@ -44,7 +47,7 @@ public class Bootstrap {
 //        }
 
         try {
-            Socket socket = new Socket("127.0.0.1", 9005);
+            Socket socket = new Socket("192.168.0.180", 9005);
             log.info("Connected to master node on - " + socket.getInetAddress().getHostAddress());
 
             // Initializing and stating the listener for compilation.
