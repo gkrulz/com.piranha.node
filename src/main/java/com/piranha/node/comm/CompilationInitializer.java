@@ -218,11 +218,11 @@ public class CompilationInitializer extends CompilationListener {
 
             Socket socket = null;
 
-            try {
-                socket = new Socket("127.0.0.1", 10000);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                socket = new Socket("127.0.0.1", 10000);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
             for (String fileName : filesRequired){
                 JsonObject dependencyRequest = new JsonObject();
