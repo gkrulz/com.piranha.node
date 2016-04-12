@@ -37,11 +37,11 @@ public class Bootstrap {
         log.info("Local IP: " + localIpAddress);
 
         //loading property file.
-//        try {
-//            properties.load(Bootstrap.class.getClassLoader().getResourceAsStream("config.properties"));
-//        } catch (IOException e) {
-//            log.error("Unable to load the property file 'config.properties'", e);
-//        }
+        try {
+            properties.load(Bootstrap.class.getClassLoader().getResourceAsStream("config.properties"));
+        } catch (IOException e) {
+            log.error("Unable to load the property file 'config.properties'", e);
+        }
 
         try {
             Socket socket = new Socket(properties.getProperty("MASTER_NODE_IP"), 9005);
