@@ -240,7 +240,7 @@ public class CompilationInitializer extends CompilationListener {
                 dependencyProvider.start();
             }
 
-            log.debug(filesRequired);
+            log.debug(filesRequired); 
         }
     }
 
