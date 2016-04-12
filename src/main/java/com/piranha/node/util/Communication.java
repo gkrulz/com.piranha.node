@@ -33,6 +33,7 @@ public class Communication {
     public void writeToSocket(Socket socket, JsonElement data) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         out.writeObject(data.toString());
+        out.flush();
     }
 
     /***

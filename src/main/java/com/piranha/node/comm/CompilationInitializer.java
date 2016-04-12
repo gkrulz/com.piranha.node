@@ -3,6 +3,7 @@ package com.piranha.node.comm;
 import com.google.gson.*;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
+import com.piranha.node.compile.CodeProvider;
 import com.piranha.node.compile.Compiler;
 import com.piranha.node.compile.DependencyProvider;
 import com.piranha.node.util.Communication;
@@ -218,7 +219,7 @@ public class CompilationInitializer extends CompilationListener {
             Socket socket = null;
 
             try {
-                socket = new Socket(properties.getProperty("MASTER_NODE_IP"), 10000);
+                socket = new Socket("127.0.0.1", 10000);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -228,10 +229,10 @@ public class CompilationInitializer extends CompilationListener {
                 dependencyRequest.addProperty("op", "DEPENDENCY_REQUEST");
                 dependencyRequest.addProperty("dependency", fileName);
 
-                DependencyProvider dependencyProvider = null;
+                CodeProvider dependencyProvider = null;
 
                 try {
-                    dependencyProvider = new DependencyProvider(dependencyRequest, socket);
+                    dependencyProvider = new CodeProvider(dependencyRequest, 10000);
                 } catch (IOException e) {
                     log.error("Unable to initialize dependency  provider.", e);
                 }
